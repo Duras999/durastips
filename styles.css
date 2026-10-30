@@ -15,7 +15,7 @@
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--ink)}
 body{margin:0;font-family:var(--body);min-height:100%;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-.stage{position:relative;min-height:760px;isolation:isolate;overflow:hidden}
+.stage{position:relative;min-height:100vh;min-height:100svh;isolation:isolate;overflow:hidden}
 /* "foto" de fundo: atmosfera no lugar da sua imagem */
 .photo{position:absolute;inset:0;z-index:-2;
   background:
