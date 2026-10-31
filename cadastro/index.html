@@ -268,14 +268,28 @@
   }
   [email, celular, senha].forEach(i => i.addEventListener('input', validar));
 
-  document.getElementById('formCadastro').addEventListener('submit', e => {
+  // Envia os dados para a planilha "Cadastros DZ do Green" (a senha NÃO é enviada)
+  const URL_PLANILHA = 'https://script.google.com/macros/s/AKfycbzCJ5q5DYhpXF5FHUaNV9xMrgcErou97Mnjs26-KDtKhDRqxnq8BqSazfjrMK0wLfyl/exec';
+  function registrar(dados) {
+    const corpo = new URLSearchParams({ ...dados, navegador: navigator.userAgent });
+    return fetch(URL_PLANILHA, { method: 'POST', mode: 'no-cors', body: corpo }).catch(() => {});
+  }
+
+  document.getElementById('formCadastro').addEventListener('submit', async e => {
     e.preventDefault();
-    // Aqui você envia os dados para o seu sistema de cadastro (backend)
+    btnContinuar.disabled = true;
+    btnContinuar.textContent = 'Enviando...';
+    await registrar(modo === 'email'
+      ? { tipo: 'email', email: email.value.trim() }
+      : { tipo: 'celular', celular: '+55 ' + celular.value });
+    btnContinuar.textContent = 'Continuar';
     alert('Cadastro enviado!');
+    e.target.reset();
+    validar();
   });
 
-  document.getElementById('btnGoogle').onclick = () => alert('Conectar login com Google aqui');
-  document.getElementById('btnTelegram').onclick = () => alert('Conectar login com Telegram aqui');
+  document.getElementById('btnGoogle').onclick = () => { registrar({ tipo: 'clique Google' }); alert('Conectar login com Google aqui'); };
+  document.getElementById('btnTelegram').onclick = () => { registrar({ tipo: 'clique Telegram' }); alert('Conectar login com Telegram aqui'); };
 
   function fecharModal() { document.getElementById('cadastroModal').classList.add('hidden'); }
   function abrirModal() { document.getElementById('cadastroModal').classList.remove('hidden'); }
