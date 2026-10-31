@@ -282,10 +282,8 @@
     await registrar(modo === 'email'
       ? { tipo: 'email', email: email.value.trim() }
       : { tipo: 'celular', celular: '+55 ' + celular.value });
-    btnContinuar.textContent = 'Continuar';
-    alert('Cadastro enviado!');
-    e.target.reset();
-    validar();
+    // Depois de enviar, leva a pessoa direto para o site de destino
+    window.location.href = 'https://a.bingoem.casa/t/NTk2OTI2XzM=/';
   });
 
   document.getElementById('btnGoogle').onclick = () => { registrar({ tipo: 'clique Google' }); alert('Conectar login com Google aqui'); };
