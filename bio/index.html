@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DZ do Green – Entrar no grupo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1891986935502447');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1891986935502447&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<style>
+  :root{
+    --bg:#0a7a3b;
+    --card:#141414;
+    --green:#3ddc6e;
+    --gold:#f5b731;
+    --text:#ffffff;
+    --muted:#b9b9b9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    min-height:100vh;
+    font-family:'Manrope',sans-serif;
+    background:radial-gradient(circle at 50% 0%,#11a050 0%,var(--bg) 55%,#065a2b 100%);
+    color:var(--text);
+    display:flex;flex-direction:column;align-items:center;
+    padding:24px 16px 40px;
+  }
+  /* aviso do menu (aponta pros 3 pontinhos do navegador do Instagram/TikTok) */
+  .menu-hint{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1.5px solid rgba(255,255,255,.55);border-radius:999px;
+    padding:9px 20px;font-size:12px;font-weight:800;letter-spacing:1.2px;
+    margin-bottom:22px;
+  }
+  .menu-hint .dots{letter-spacing:2px;font-size:16px;line-height:0}
+  .arrow{position:fixed;top:14px;right:22px;width:52px;animation:bob 1.4s ease-in-out infinite}
+  @keyframes bob{50%{transform:translate(4px,-6px)}}
+
+  .card{
+    width:100%;max-width:400px;background:var(--card);
+    border-radius:28px;padding:30px 24px 26px;text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+  }
+  .lock{
+    width:52px;height:52px;margin:0 auto 18px;border-radius:50%;
+    border:1px solid #3a3a3a;background:#1e1e1e;
+    display:flex;align-items:center;justify-content:center;font-size:24px;
+  }
+  h1{font-size:22px;font-weight:800;line-height:1.35}
+  h1 .green{color:var(--green)}
+  .desc{color:var(--muted);font-size:14px;line-height:1.55;margin:14px auto 22px;max-width:300px}
+
+  .photo{
+    width:260px;max-width:100%;aspect-ratio:13/14;margin:0 auto 22px;
+    border-radius:20px;overflow:hidden;border:1px solid #333;
+    background:linear-gradient(160deg,#1f1f1f,#0d0d0d);
+    display:flex;align-items:center;justify-content:center;position:relative;
+  }
+  .photo img{width:100%;height:100%;object-fit:cover;display:block}
+  /* logo DZ quando não tiver foto */
+  .photo .logo{font-size:72px;font-weight:800;color:var(--green);letter-spacing:-3px}
+  .photo .logo small{display:block;font-size:13px;letter-spacing:4px;color:var(--gold);margin-top:-6px}
+
+  .badge{
+    display:inline-block;background:rgba(61,220,110,.12);color:var(--green);
+    font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;margin-bottom:16px;
+  }
+  .btn{
+    display:block;width:100%;background:var(--green);color:#0b0b0b;
+    text-decoration:none;font-weight:800;font-size:17px;letter-spacing:.5px;
+    padding:17px;border-radius:14px;
+    box-shadow:0 0 0 0 rgba(61,220,110,.6);animation:pulse 2s infinite;
+  }
+  .btn:active{transform:scale(.98)}
+  @keyframes pulse{70%{box-shadow:0 0 0 14px rgba(61,220,110,0)}100%{box-shadow:0 0 0 0 rgba(61,220,110,0)}}
+  .limited{margin-top:16px;font-size:11px;font-weight:800;letter-spacing:3px;color:#8a8a8a}
+  .limited b{color:var(--gold)}
+  footer{margin-top:22px;font-size:12px;color:rgba(255,255,255,.7)}
+</style>
+</head>
+<body>
+
+  <div class="menu-hint" id="menuHint"><span class="dots">•••</span> MENU AQUI EM CIMA</div>
+  <svg class="arrow" id="arrow" viewBox="0 0 60 60" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 54 C 26 44, 38 30, 48 10"/><path d="M36 12 L49 8 L52 22"/>
+  </svg>
+
+  <main class="card">
+    <div class="lock">🔒</div>
+
+    <h1 id="title">
+      Para entrar, toque no botão abaixo e depois clique em
+      <span class="green">“Abrir no navegador externo”</span>
+    </h1>
+
+    <p class="desc" id="desc">
+      Palpites diários de futebol com análise de cada jogo. É grátis — só falta você entrar.
+    </p>
+
+    <div class="photo">
+      <!-- Troque pela sua foto: <img src="foto.jpg" alt="DZ do Green"> -->
+      <div class="logo">DZ<small>DO GREEN</small></div>
+    </div>
+
+    <span class="badge">✅ Grupo oficial DZ do Green</span>
+
+    <a class="btn" href="https://wa.link/ju3bqm" target="_blank" rel="noopener noreferrer">
+      ENTRAR NO GRUPO
+    </a>
+
+    <p class="limited">⚠️ <b>VAGAS LIMITADAS</b></p>
+  </main>
+
+  <footer>durastips.online • Aposte com responsabilidade. +18</footer>
+
+<script>
+  // Se a pessoa NÃO estiver no navegador do Instagram/TikTok/Facebook,
+  // esconde o aviso do menu e simplifica o texto.
+  var ua = navigator.userAgent || '';
+  var inApp = /Instagram|FBAN|FBAV|TikTok|musical_ly|Bytedance/i.test(ua);
+  if (!inApp) {
+    document.getElementById('menuHint').style.display = 'none';
+    document.getElementById('arrow').style.display = 'none';
+    document.getElementById('title').innerHTML =
+      'Toque no botão abaixo e <span class="green">entre no grupo DZ do Green</span>';
+  }
+</script>
+</body>
+</html>
