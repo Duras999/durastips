@@ -25,120 +25,140 @@ src="https://www.facebook.com/tr?id=1891986935502447&ev=PageView&noscript=1"
 <!-- End Meta Pixel Code -->
 <style>
   :root{
-    --bg:#0a7a3b;
-    --card:#141414;
-    --green:#3ddc6e;
-    --gold:#f5b731;
-    --text:#ffffff;
-    --muted:#b9b9b9;
+    --bg:#0a7a3b; --card:#141414; --green:#3ddc6e; --wpp:#25d366;
+    --gold:#f5b731; --text:#fff; --muted:#b9b9b9;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
-    min-height:100vh;
-    font-family:'Manrope',sans-serif;
-    background:radial-gradient(circle at 50% 0%,#11a050 0%,var(--bg) 55%,#065a2b 100%);
-    color:var(--text);
-    display:flex;flex-direction:column;align-items:center;
-    padding:24px 16px 40px;
+    min-height:100vh;font-family:'Manrope',sans-serif;color:var(--text);
+    background:radial-gradient(circle at 50% 0%,#0f2a1a 0%,#0a0f0c 55%,#050706 100%);
+    display:flex;flex-direction:column;align-items:center;padding:24px 16px 120px;
   }
-  /* aviso do menu (aponta pros 3 pontinhos do navegador do Instagram/TikTok) */
+  .card{
+    width:100%;max-width:380px;background:var(--card);border-radius:26px;
+    padding:26px 22px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6);
+    border:1px solid #232323;
+  }
+  .live{
+    display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;
+    letter-spacing:1px;background:rgba(61,220,110,.12);color:var(--green);
+    padding:7px 14px;border-radius:999px;margin-bottom:16px;
+  }
+  .live i{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  h1{font-size:23px;font-weight:800;line-height:1.3}
+  h1 .green{color:var(--green)}
+  .desc{color:var(--muted);font-size:14px;line-height:1.55;margin:12px auto 18px;max-width:300px}
+
+  .photo{
+    display:block;width:240px;max-width:100%;aspect-ratio:13/14;margin:0 auto 18px;
+    border-radius:20px;overflow:hidden;border:2px solid var(--green);position:relative;
+  }
+  .photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .photo .tag{
+    position:absolute;left:10px;bottom:10px;background:var(--gold);color:#111;
+    font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;letter-spacing:.5px;
+  }
+
+  .perks{list-style:none;text-align:left;margin:0 auto 20px;max-width:280px;display:grid;gap:9px}
+  .perks li{font-size:14px;font-weight:700;display:flex;gap:10px;align-items:center}
+  .perks li span{
+    flex:0 0 22px;height:22px;border-radius:50%;background:rgba(61,220,110,.15);
+    color:var(--green);display:grid;place-items:center;font-size:12px;
+  }
+
+  .btn{
+    position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;
+    width:100%;background:var(--wpp);color:#06210f;text-decoration:none;
+    font-size:16px;font-weight:800;letter-spacing:.2px;line-height:1.25;padding:18px 14px;border-radius:16px;
+    box-shadow:0 0 0 0 rgba(37,211,102,.7);animation:pulse 1.8s infinite;
+  }
+  .btn svg{width:24px;height:24px;flex:0 0 24px}
+  .btn::after{
+    content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:skewX(-20deg);animation:shine 2.6s infinite;
+  }
+  @keyframes pulse{70%{box-shadow:0 0 0 16px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
+  @keyframes shine{60%,100%{left:130%}}
+  .btn:active{transform:scale(.97)}
+  .sub{font-size:12px;color:var(--muted);margin-top:9px}
+
+  .urgent{
+    margin-top:16px;font-size:12px;font-weight:800;letter-spacing:2px;color:var(--gold);
+  }
+  .bar{height:7px;background:#2a2a2a;border-radius:99px;margin:8px auto 0;max-width:240px;overflow:hidden}
+  .bar b{display:block;height:100%;width:87%;background:linear-gradient(90deg,var(--gold),#ff7a2f);border-radius:99px}
+
+  .foot{margin-top:18px;font-size:12px;color:rgba(255,255,255,.5)}
+
+  /* botão fixo no celular — aparece quando o principal sai da tela */
+  .sticky{
+    position:fixed;left:16px;right:16px;bottom:16px;max-width:380px;margin:0 auto;
+    transform:translateY(140%);transition:transform .3s;z-index:9;
+  }
+  .sticky.show{transform:none}
   .menu-hint{
     display:inline-flex;align-items:center;gap:8px;
     border:1.5px solid rgba(255,255,255,.55);border-radius:999px;
-    padding:9px 20px;font-size:12px;font-weight:800;letter-spacing:1.2px;
-    margin-bottom:22px;
+    padding:9px 20px;font-size:12px;font-weight:800;letter-spacing:1.2px;margin-bottom:22px;
   }
   .menu-hint .dots{letter-spacing:2px;font-size:16px;line-height:0}
   .arrow{position:fixed;top:14px;right:22px;width:52px;animation:bob 1.4s ease-in-out infinite}
   @keyframes bob{50%{transform:translate(4px,-6px)}}
-
-  .card{
-    width:100%;max-width:400px;background:var(--card);
-    border-radius:28px;padding:30px 24px 26px;text-align:center;
-    box-shadow:0 20px 50px rgba(0,0,0,.35);
-  }
-  .lock{
-    width:52px;height:52px;margin:0 auto 18px;border-radius:50%;
-    border:1px solid #3a3a3a;background:#1e1e1e;
-    display:flex;align-items:center;justify-content:center;font-size:24px;
-  }
-  h1{font-size:22px;font-weight:800;line-height:1.35}
-  h1 .green{color:var(--green)}
-  .desc{color:var(--muted);font-size:14px;line-height:1.55;margin:14px auto 22px;max-width:300px}
-
-  .photo{
-    width:260px;max-width:100%;aspect-ratio:13/14;margin:0 auto 22px;
-    border-radius:20px;overflow:hidden;border:1px solid #333;
-    background:linear-gradient(160deg,#1f1f1f,#0d0d0d);
-    display:flex;align-items:center;justify-content:center;position:relative;
-  }
-  .photo img{width:100%;height:100%;object-fit:cover;display:block}
-  /* logo DZ quando não tiver foto */
-  .photo .logo{font-size:72px;font-weight:800;color:var(--green);letter-spacing:-3px}
-  .photo .logo small{display:block;font-size:13px;letter-spacing:4px;color:var(--gold);margin-top:-6px}
-
-  .badge{
-    display:inline-block;background:rgba(61,220,110,.12);color:var(--green);
-    font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;margin-bottom:16px;
-  }
-  .btn{
-    display:block;width:100%;background:var(--green);color:#0b0b0b;
-    text-decoration:none;font-weight:800;font-size:17px;letter-spacing:.5px;
-    padding:17px;border-radius:14px;
-    box-shadow:0 0 0 0 rgba(61,220,110,.6);animation:pulse 2s infinite;
-  }
-  .btn:active{transform:scale(.98)}
-  @keyframes pulse{70%{box-shadow:0 0 0 14px rgba(61,220,110,0)}100%{box-shadow:0 0 0 0 rgba(61,220,110,0)}}
-  .limited{margin-top:16px;font-size:11px;font-weight:800;letter-spacing:3px;color:#8a8a8a}
-  .limited b{color:var(--gold)}
-  footer{margin-top:22px;font-size:12px;color:rgba(255,255,255,.7)}
 </style>
 </head>
 <body>
-
   <div class="menu-hint" id="menuHint"><span class="dots">•••</span> MENU AQUI EM CIMA</div>
   <svg class="arrow" id="arrow" viewBox="0 0 60 60" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
     <path d="M8 54 C 26 44, 38 30, 48 10"/><path d="M36 12 L49 8 L52 22"/>
   </svg>
-
   <main class="card">
-    <div class="lock">🔒</div>
+    <div class="live"><i></i> PALPITES DE HOJE JÁ SAÍRAM</div>
 
-    <h1 id="title">
-      Para entrar, toque no botão abaixo e depois clique em
-      <span class="green">“Abrir no navegador externo”</span>
-    </h1>
+    <h1 id="title">Entre agora no <span class="green">grupo DZ do Green</span> 👇</h1>
+    <p class="desc">Te ensino a operar na casa de Portugal com estratégia e gestão de banca.</p>
 
-    <p class="desc" id="desc">
-      Palpites diários de futebol com análise de cada jogo. É grátis — só falta você entrar.
-    </p>
-
-    <div class="photo">
+    <a class="photo" href="https://wa.link/vy5cgj" target="_blank" rel="noopener noreferrer">
       <img src="WhatsApp%20Image%202026-11-04%20at%2019.25.11.jpeg" alt="DZ do Green" style="object-position:50% 25%">
-    </div>
-
-    <span class="badge">✅ Grupo oficial DZ do Green</span>
-
-    <a class="btn" href="https://wa.link/vy5cgj" target="_blank" rel="noopener noreferrer">
-      ENTRAR NO GRUPO
+      <span class="tag">✅ GRUPO OFICIAL</span>
     </a>
 
-    <p class="limited">⚠️ <b>VAGAS LIMITADAS</b></p>
+    <ul class="perks">
+      <li><span>✓</span> Palpites todo dia antes dos jogos</li>
+      <li><span>✓</span> Análise de cada partida</li>
+      <li><span>✓</span> Sem pagar nada</li>
+    </ul>
+
+    <a class="btn" id="cta" href="https://wa.link/vy5cgj" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.3-.5 0-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.1.1.7-.1 1.3Z"/></svg>
+      QUERO LINK DA CASA REGULAMENTADA!
+    </a>
+    <p class="sub">Abre direto no WhatsApp · leva 5 segundos</p>
+
+    <p class="urgent">⚠️ VAGAS LIMITADAS</p>
+    <div class="bar"><b></b></div>
   </main>
 
-  <footer>durastips.online • Aposte com responsabilidade. +18</footer>
+  <p class="foot">durastips.online • Aposte com responsabilidade. +18</p>
+
+  <a class="btn sticky" id="sticky" href="https://wa.link/vy5cgj" target="_blank" rel="noopener noreferrer">QUERO LINK DA CASA REGULAMENTADA!</a>
 
 <script>
-  // Se a pessoa NÃO estiver no navegador do Instagram/TikTok/Facebook,
-  // esconde o aviso do menu e simplifica o texto.
   var ua = navigator.userAgent || '';
   var inApp = /Instagram|FBAN|FBAV|TikTok|musical_ly|Bytedance/i.test(ua);
-  if (!inApp) {
+  if (inApp) {
+    document.getElementById('title').innerHTML =
+      'Toque no botão abaixo e depois clique em <span class="green">“Abrir no navegador externo”</span>';
+  } else {
     document.getElementById('menuHint').style.display = 'none';
     document.getElementById('arrow').style.display = 'none';
-    document.getElementById('title').innerHTML =
-      'Toque no botão abaixo e <span class="green">entre no grupo DZ do Green</span>';
   }
+  document.querySelectorAll('a[href*="wa.link"]').forEach(function(a){
+    a.addEventListener('click', function(){ if (window.fbq) fbq('track','Lead'); });
+  });
+  const cta=document.getElementById('cta'), st=document.getElementById('sticky');
+  new IntersectionObserver(([e])=>st.classList.toggle('show',!e.isIntersecting)).observe(cta);
 </script>
 </body>
 </html>
