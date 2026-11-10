@@ -44,16 +44,12 @@ src="https://www.facebook.com/tr?id=1891986935502447&ev=PageView&noscript=1"
 html,body{background:var(--bg);color:var(--ink)}
 body{margin:0;font-family:var(--body);min-height:100%;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 .stage{position:relative;min-height:100vh;min-height:100svh;isolation:isolate;overflow:hidden}
-/* "foto" de fundo: atmosfera no lugar da sua imagem */
-.photo{position:absolute;inset:0;z-index:-2;
-  background:
-   radial-gradient(60% 70% at 72% 45%, rgba(61,220,110,.18), transparent 60%),
-   radial-gradient(40% 50% at 85% 80%, rgba(233,196,106,.14), transparent 70%),
-   linear-gradient(120deg,#0b0d0b 0%,#141814 55%,#1c201b 100%);}
+/* foto de fundo à direita */
+.photo{position:absolute;top:0;right:0;bottom:0;width:58%;z-index:-2;background:#0b0d0b url("image.jpg") center 20%/cover no-repeat}
 .mono{position:absolute;right:-2vw;top:50%;transform:translateY(-50%);z-index:-1;
   font-family:var(--display);font-weight:800;font-size:clamp(220px,38vw,560px);line-height:.8;letter-spacing:-.02em;
   color:transparent;-webkit-text-stroke:2px rgba(244,243,238,.08);user-select:none;pointer-events:none}
-.fade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,var(--bg) 0%,rgba(7,8,7,.92) 35%,rgba(7,8,7,.35) 70%,rgba(7,8,7,.6) 100%)}
+.fade{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,var(--bg) 0%,var(--bg) 38%,rgba(7,8,7,.55) 55%,rgba(7,8,7,.15) 75%,rgba(7,8,7,.35) 100%)}
 .wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
 header{display:flex;justify-content:space-between;align-items:center;gap:16px}
 .logo{font-family:var(--display);font-weight:800;font-style:italic;font-size:26px;letter-spacing:.01em}
@@ -90,8 +86,8 @@ hr{border:0;border-top:1px solid var(--line);margin:6px 0 0;width:100%}
 .raffle span{font-size:12px;color:var(--muted)}
 @media (max-width:640px){
   .hero{margin-top:56px}
-  .mono{top:22%;right:-20vw;opacity:.8}
-  .fade{background:linear-gradient(180deg,rgba(7,8,7,.4),var(--bg) 55%)}
+  .photo{width:100%;background-position:center 15%}
+  .fade{background:linear-gradient(180deg,rgba(7,8,7,.55) 0%,rgba(7,8,7,.7) 35%,rgba(7,8,7,.92) 60%,var(--bg) 80%)}
   .tag{display:none}
 }
 @media (prefers-reduced-motion:reduce){.arrow{animation:none}.cta{transition:none}}
@@ -100,7 +96,6 @@ hr{border:0;border-top:1px solid var(--line);margin:6px 0 0;width:100%}
 <body>
 <div class="stage">
   <div class="photo"></div>
-  <div class="mono" aria-hidden="true">DZ</div>
   <div class="fade"></div>
 
   <div class="wrap">
