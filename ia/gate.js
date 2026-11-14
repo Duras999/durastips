@@ -41,7 +41,7 @@ async function start() {
     if (c.includes("popup-closed")) return "Login com Google cancelado.";
     if (c.includes("too-many-requests")) return "Muitas tentativas. Espere um pouco e tente de novo.";
     if (c.includes("network")) return "Sem conexão. Verifique a internet.";
-    return "Não deu certo agora. Tente de novo.";
+    return "Não deu certo agora. Tente de novo." + (c ? ` (${c})` : "");
   };
 
   const loginView = () => {
@@ -101,7 +101,8 @@ async function start() {
       if (String(e.code).includes("popup-blocked") || String(e.code).includes("operation-not-supported")) {
         try { await A.signInWithRedirect(auth, prov); return; } catch (e2) { e = e2; }
       }
-      busy(false); err(msgFor(e));
+      console.error("Palpiteiro google login", e && e.code, e && e.message);
+      busy(false); err(String(e && e.code).includes("invalid-credential") ? "O Google recusou o login. (" + e.code + ")" : msgFor(e));
     }
   }
 
