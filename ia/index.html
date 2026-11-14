@@ -11,6 +11,7 @@
 <meta name="theme-color" content="#0b0e12">
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=3">
+<link rel="shortcut icon" href="icon-192.png?v=3">
 <link rel="manifest" href="manifest.webmanifest">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -339,7 +340,7 @@ const credit = `<p class="note">Dados: <a href="https://sportscore.com/" rel="do
 let dayCache = {};
 async function homeView() {
   const top = `<div class="top">
-    <div class="brand"><div class="logo">P</div><h1>Palpi<span>teiro</span></h1></div>
+    <div class="brand"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></div>
     <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <input id="q" placeholder="Pesquisar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
     <div class="day"><button onclick="dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="dayOff++;render()">›</button></div></div>`;
@@ -423,7 +424,7 @@ async function detailView(id) {
 }
 
 function slipView() {
-  let html = `<div class="top"><div class="brand"><div class="logo">P</div><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
+  let html = `<div class="top"><div class="brand"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
   if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites da IA</b> e adicione as seleções.</div>`;
   else {
     html += slip.map((s, i) => `<div class="slip-item">${crest(s.h, s.hl)}<div style="flex:1">
