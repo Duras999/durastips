@@ -119,8 +119,12 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .fade{animation:f .25s ease}
   @keyframes f{from{opacity:0;transform:translateY(8px)}}
-.crest.img,.bigcrest.img{background:#fff;overflow:hidden;border-color:rgba(255,255,255,.9)}
-  .crest.img img,.bigcrest.img img{width:86%;height:86%;object-fit:contain}
+.crest,.bigcrest{border:0!important}
+  .bigcrest{box-shadow:none}
+  .crest.img,.bigcrest.img{background:transparent;border-radius:0;overflow:visible}
+  .crest.img img,.bigcrest.img img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+  .lbadge.img{background:var(--card2)!important;overflow:hidden}
+  .lbadge.img img{width:78%;height:78%;object-fit:contain}
   .crest{background:#2a323c;color:#fff}
   .bigcrest{background:#2a323c;color:#fff}
   .day button{color:var(--acc);font-size:20px;padding:0 6px}
@@ -367,7 +371,7 @@ async function homeView() {
   for (const {L, ms} of dayCache[key]) {
     const list = ms.filter(m => !q || (m.home + m.away).toLowerCase().includes(q));
     if (!list.length) continue; any = true;
-    html += `<div class="league fade"><div class="lhead"><div class="lbadge" style="background:${L.c};color:${L.tc}">${L.s}</div>
+    html += `<div class="league fade"><div class="lhead">${list[0].competition_logo ? `<div class="lbadge img"><img src="${esc(list[0].competition_logo)}" alt="" onerror="this.parentNode.classList.remove('img');this.parentNode.style.background='${L.c}';this.parentNode.style.color='${L.tc}';this.parentNode.textContent='${L.s}'"></div>` : `<div class="lbadge" style="background:${L.c};color:${L.tc}">${L.s}</div>`}
       <div><div class="lname">${L.name}</div><div class="lsub">${list.length} jogo${list.length > 1 ? "s" : ""}</div></div></div>`;
     for (const m of list) {
       const live = m.status === "live", fin = m.status === "finished";
