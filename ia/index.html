@@ -389,7 +389,7 @@ function winProb(H, A) {
   return {h, d: 100 - h - a, a};
 }
 async function cardStats(T) {
-  const games = await Promise.all(T.res.slice(0, 5).map(async x => {
+  const one = async x => {
     const slug = (x.url || "").split("/").filter(Boolean)[2];
     if (!slug) return null;
     const key = "iagc:" + slug + "|" + x.date;
@@ -405,7 +405,13 @@ async function cardStats(T) {
     const side = x.home ? "home" : "away";
     const mine = c.filter(i => i.side === side), opp = c.filter(i => i.side !== side);
     return {y: mine.filter(i => /yellow/i.test(i.type)).length, r: mine.filter(i => /red/i.test(i.type)).length, tot: c.length, opp: opp.length};
-  }));
+  };
+  const games = [];
+  for (const x of T.res.slice(0, 5)) {
+    let g = await one(x).catch(() => null);
+    if (!g) { await new Promise(r => setTimeout(r, 400)); g = await one(x).catch(() => null); }
+    games.push(g);
+  }
   const g = games.filter(Boolean), n = g.length;
   if (!n) return null;
   const sum = k => g.reduce((a, x) => a + x[k], 0);
