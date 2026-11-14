@@ -21,7 +21,7 @@
     --yel:#ffd34d; --red:#ff5a5a; --acc:#7c86ff;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  html,body,button,a{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
   body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
        padding-top:env(safe-area-inset-top);padding-bottom:calc(84px + env(safe-area-inset-bottom));min-height:100vh}
   .wrap{max-width:520px;margin:0 auto}
@@ -551,8 +551,6 @@ window.addEventListener("hashchange", () => { tab = "seq"; render(); window.scro
 /* ---------- sem zoom no celular ---------- */
 ["gesturestart", "gesturechange", "gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive: false}));
 document.addEventListener("touchmove", e => { if (e.touches.length > 1) e.preventDefault(); }, {passive: false});
-let lastTap = 0;
-document.addEventListener("touchend", e => { const now = Date.now(); if (now - lastTap < 300 && !e.target.closest("input,textarea")) e.preventDefault(); lastTap = now; }, {passive: false});
 
 /* ---------- arrastar pra baixo para atualizar ---------- */
 (function(){
