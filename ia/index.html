@@ -110,6 +110,18 @@
   .crest{background:#2a323c;color:#fff}
   .bigcrest{background:#2a323c;color:#fff}
   .day button{color:var(--acc);font-size:20px;padding:0 6px}
+  .ready-wrap{margin:4px 16px 8px}
+  .ready-title{font-weight:800;font-size:17px;margin:6px 2px 10px}
+  .ready{background:linear-gradient(160deg,#17311f,#161b21 55%);border:1px solid #23503a;border-radius:20px;padding:14px;margin-bottom:12px}
+  .ready-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .ready-tag{background:var(--green);color:#04210f;font-weight:800;font-size:12px;padding:4px 10px;border-radius:99px}
+  .ready-odd{font-weight:800;color:var(--yel)}
+  .ready-sel{padding:8px 2px;border-bottom:1px solid var(--line)}
+  .ready-sel .g{color:var(--mut);font-size:12.5px}
+  .ready-sel .m{font-weight:700;margin-top:2px}
+  .ready-btn{display:block;text-align:center;text-decoration:none;margin-top:12px}
+  .ready-note{color:var(--mut);font-size:12px;text-align:center;line-height:1.5}
+  .ready-note a{color:var(--green)}
 </style>
 </head>
 <body>
@@ -136,6 +148,34 @@ const LEAGUES = [
   {slug:"bundesliga", name:"Bundesliga", s:"BUN", c:"#d20515", tc:"#fff"}
 ];
 const TZ = "America/Sao_Paulo";
+
+/* ---------- bilhetes prontos (código de reserva da Bingo em Casa) ---------- */
+const CASA = "https://www.bingoemcasa17.com/pt-BR/sportsbook?btBookingCode=";
+const AFILIADO = "https://a.bingoem.casa/t/NTk2OTEwXzM=";
+const BILHETES = [
+  {data:"2026-11-14", tipo:"Seguro", odd:"3.22", codigo:"17059B1", sel:[
+    {jogo:"Mirassol x Atlético-MG", hora:"18:30", mercado:"Menos de 2.5 gols"},
+    {jogo:"Chapecoense x Vasco", hora:"20:30", mercado:"Mais de 2.5 gols"}]},
+  {data:"2026-11-14", tipo:"Equilibrado", odd:"3.54", codigo:"5B3DE94", sel:[
+    {jogo:"Chapecoense x Vasco", hora:"20:30", mercado:"Ambas marcam: Sim"},
+    {jogo:"Mirassol x Atlético-MG", hora:"18:30", mercado:"Mirassol ou empate"},
+    {jogo:"Sport x Goiás", hora:"16:30", mercado:"Goiás ou empate"}]},
+  {data:"2026-11-14", tipo:"Ousado", odd:"6.95", codigo:"C3CEF2C", sel:[
+    {jogo:"Sport x Goiás", hora:"16:30", mercado:"Goiás ou empate"},
+    {jogo:"Criciúma x Novorizontino", hora:"16:30", mercado:"Novorizontino ou empate"},
+    {jogo:"Mirassol x Atlético-MG", hora:"18:30", mercado:"Menos de 2.5 gols"},
+    {jogo:"Chapecoense x Vasco", hora:"20:30", mercado:"Mais de 2.5 gols"}]}
+];
+function readyView() {
+  const today = new Date().toLocaleDateString("en-CA", {timeZone: TZ});
+  const list = BILHETES.filter(b => b.data === today);
+  if (!list.length) return "";
+  return `<div class="ready-wrap"><div class="ready-title">🔥 Bilhetes prontos da IA</div>` +
+    list.map(b => `<div class="ready fade"><div class="ready-head"><span class="ready-tag">${b.tipo}</span><span class="ready-odd">Odd ${b.odd}</span></div>` +
+      b.sel.map(s => `<div class="ready-sel"><div class="g">${s.jogo} · ${s.hora}</div><div class="m">${s.mercado}</div></div>`).join("") +
+      `<a class="gen ready-btn" href="${CASA}${b.codigo}" target="_blank" rel="noopener">Apostar</a></div>`).join("") +
+    `<p class="ready-note">O botão abre a Bingo em Casa com o bilhete já montado. As odds podem mudar até o jogo.<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
+}
 
 /* ---------- cache simples ---------- */
 const mem = {};
@@ -303,7 +343,7 @@ async function homeView() {
     if (key !== dayOff) return null;
   }
   const q = filter.toLowerCase();
-  let html = top, any = false;
+  let html = top + (dayOff === 0 && !filter ? readyView() : ""), any = false;
   for (const {L, ms} of dayCache[key]) {
     const list = ms.filter(m => !q || (m.home + m.away).toLowerCase().includes(q));
     if (!list.length) continue; any = true;
