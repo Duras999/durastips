@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Palpiteiro · Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0e12">
+<link rel="icon" type="image/png" href="../icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=3">
+<style>
+  :root{--bg:#0b0e12;--card:#161b21;--card2:#1d242c;--line:#252d36;--txt:#eef2f6;--mut:#8a96a3;--green:#19e07a;--yel:#ffd34d;--red:#ff5a5a;--blue:#4c8dff}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;touch-action:manipulation}
+  button{font:inherit;border:0;cursor:pointer;color:inherit;background:none}
+  input,select{font:inherit;font-size:16px}
+  .wrap{max-width:980px;margin:0 auto;padding:16px 16px 60px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand img{width:36px;height:36px;border-radius:10px}
+  .brand h1{font-size:20px;font-weight:800}.brand h1 span{color:var(--green)}
+  .brand small{display:block;font-size:12px;color:var(--mut);font-weight:500}
+  .who{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:13px}
+  .btn{padding:9px 14px;border-radius:12px;font-weight:700;font-size:14px}
+  .btn.g{background:var(--green);color:#04210f}.btn.r{background:rgba(255,90,90,.14);color:var(--red)}
+  .btn.s{background:var(--card2);color:var(--txt)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+  .st{background:var(--card);border-radius:16px;padding:14px}
+  .st b{display:block;font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+  .st span{font-size:13px;color:var(--mut)}
+  .st.pend b{color:var(--yel)}.st.act b{color:var(--green)}
+  .tabs{display:flex;gap:6px;background:#16191d;border-radius:99px;padding:4px;margin-bottom:12px}
+  .tabs button{flex:1;padding:9px;border-radius:99px;font-weight:700;font-size:14px;color:var(--mut)}
+  .tabs button.on{background:#e9eaec;color:#121417}
+  .tabs .n{display:inline-block;min-width:20px;padding:1px 6px;margin-left:4px;border-radius:99px;background:var(--yel);color:#111;font-size:12px}
+  .bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .bar input,.bar select{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--txt);outline:0}
+  .bar input{flex:1;min-width:180px}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .u{background:var(--card);border-radius:16px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+  .av{width:40px;height:40px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-weight:800;overflow:hidden}
+  .av img{width:100%;height:100%;object-fit:cover}
+  .u .nm{font-weight:700;font-size:15px}
+  .u .ct{font-size:13px;color:var(--mut);margin-top:2px;word-break:break-all}
+  .u .ct a{color:var(--green);text-decoration:none}
+  .u .us{font-size:12px;color:#aab4be;margin-top:6px;display:flex;flex-wrap:wrap;gap:4px 12px}
+  .u .us b{color:var(--txt)}
+  .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;margin-left:6px;vertical-align:2px}
+  .pill.pending{background:rgba(255,211,77,.15);color:var(--yel)}.pill.approved{background:rgba(25,224,122,.14);color:var(--green)}.pill.blocked{background:rgba(255,90,90,.14);color:var(--red)}
+  .pill.on{background:rgba(25,224,122,.14);color:var(--green)}
+  .empty{text-align:center;color:var(--mut);padding:30px;background:var(--card);border-radius:16px}
+  .clk{cursor:pointer}
+  #login{min-height:90vh;display:flex;align-items:center;justify-content:center}
+  .lcard{width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px;text-align:center}
+  .lcard input{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;color:var(--txt);outline:0}
+  .lcard .btn{padding:14px;font-size:16px}
+  .gbtn{background:#fff;color:#1f1f1f;font-weight:700;padding:13px;border-radius:14px}
+  .err{color:var(--red);font-size:14px}
+  .muted{color:var(--mut);font-size:14px}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+  .modal[hidden]{display:none}
+  .sheet{background:var(--card);width:100%;max-width:560px;max-height:85vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px}
+  @media(min-width:700px){.modal{align-items:center}.sheet{border-radius:22px}}
+  .sheet h3{font-size:18px;margin-bottom:4px}
+  .kv{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  .kv div{background:var(--card2);border-radius:12px;padding:10px;text-align:center}
+  .kv b{display:block;font-size:20px}.kv span{font-size:11px;color:var(--mut)}
+  table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+  th{color:var(--mut);font-weight:600;text-align:center;padding:6px}
+  td{text-align:center;padding:8px 6px;border-top:1px solid var(--line)}
+  td:first-child,th:first-child{text-align:left}
+  @media(max-width:560px){.u{grid-template-columns:auto 1fr}.acts{grid-column:1/-1;justify-content:stretch}.acts .btn{flex:1}}
+</style>
+</head>
+<body>
+<div id="root"><div class="wrap muted" style="text-align:center;padding-top:40vh">Carregando…</div></div>
+<div class="modal" id="modal" hidden><div class="sheet" id="sheet"></div></div>
+<script type="module">
+import { firebaseConfig, ADMINS, SDK } from "../firebase-config.js";
+const root = document.getElementById("root");
+if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("COLE")) {
+  root.innerHTML = `<div class="wrap"><div class="empty">Painel ainda não configurado. Falta colar os dados do Firebase no arquivo firebase-config.js.</div></div>`;
+  throw new Error("sem config");
+}
+const [{ initializeApp }, A, F] = await Promise.all([
+  import(`${SDK}/firebase-app.js`), import(`${SDK}/firebase-auth.js`), import(`${SDK}/firebase-firestore.js`)
+]);
+const app = initializeApp(firebaseConfig);
+const auth = A.getAuth(app), db = F.getFirestore(app);
+const admins = ADMINS.map(e => e.toLowerCase());
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const TZ = "America/Sao_Paulo";
+const ms = t => t && t.toMillis ? t.toMillis() : 0;
+const fmt = t => { const m = ms(t); if (!m) return "-"; const d = new Date(m);
+  return d.toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "2-digit"}) + " " + d.toLocaleTimeString("pt-BR", {timeZone: TZ, hour: "2-digit", minute: "2-digit"}); };
+const ago = t => { const m = ms(t); if (!m) return "nunca"; const s = (Date.now() - m) / 1000;
+  if (s < 120) return "agora"; if (s < 3600) return `há ${Math.floor(s / 60)} min`; if (s < 86400) return `há ${Math.floor(s / 3600)} h`; return `há ${Math.floor(s / 86400)} d`; };
+const startToday = () => { const sp = new Date(new Date().toLocaleString("en-US", {timeZone: TZ}));
+  return Date.now() - ((sp.getHours() * 60 + sp.getMinutes()) * 60 + sp.getSeconds()) * 1000; };
+const wa = w => w ? `<a href="https://wa.me/${w.length <= 11 ? "55" + w : w}" target="_blank" rel="noopener">${esc(w.replace(/^(\d{2})(\d{4,5})(\d{4})$/, "($1) $2-$3"))}</a>` : "";
+const STATUS = {pending: "Pendente", approved: "Aprovado", blocked: "Bloqueado"};
+
+let users = [], tab = "pend", q = "", filt = "all", unsub = null;
+
+function loginView(msg) {
+  root.innerHTML = `<div id="login"><div class="lcard">
+    <div class="brand" style="justify-content:center"><img src="../icon-192.png?v=3" alt=""><h1>Palpi<span>teiro</span><small>Painel do administrador</small></h1></div>
+    <input id="em" type="email" placeholder="E-mail" autocomplete="username">
+    <input id="pw" type="password" placeholder="Senha" autocomplete="current-password">
+    <div class="err" id="er" ${msg ? "" : "hidden"}>${esc(msg || "")}</div>
+    <button class="btn g" id="go">Entrar</button>
+    <button class="gbtn" id="gg">Entrar com Google</button></div></div>`;
+  const er = m => { const e = document.getElementById("er"); e.textContent = m; e.hidden = false; };
+  document.getElementById("go").onclick = async () => {
+    try { await A.signInWithEmailAndPassword(auth, document.getElementById("em").value.trim(), document.getElementById("pw").value); }
+    catch (e) { er("E-mail ou senha incorretos."); }
+  };
+  document.getElementById("gg").onclick = async () => {
+    try { await A.signInWithPopup(auth, new A.GoogleAuthProvider()); } catch (e) { er("Login com Google cancelado."); }
+  };
+}
+
+function view() {
+  const t0 = startToday(), w7 = Date.now() - 7 * 86400000, live = Date.now() - 10 * 60000;
+  const pend = users.filter(u => u.status === "pending"), appr = users.filter(u => u.status === "approved");
+  const act = (since) => appr.filter(u => ms(u.lastSeen) >= since).length;
+  const me = auth.currentUser;
+  let list = tab === "pend" ? pend : users;
+  if (tab === "users") {
+    if (filt !== "all") list = list.filter(u => u.status === filt);
+    if (q) { const s = q.toLowerCase(); list = list.filter(u => [u.name, u.email, u.whatsapp].join(" ").toLowerCase().includes(s)); }
+    list = [...list].sort((a, b) => ms(b.lastSeen) - ms(a.lastSeen));
+  } else list = [...list].sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
+
+  root.innerHTML = `<div class="wrap">
+    <header><div class="brand"><img src="../icon-192.png?v=3" alt=""><h1>Palpi<span>teiro</span><small>Painel do administrador</small></h1></div>
+      <div class="who"><span>${esc(me.email)}</span><button class="btn s" id="out">Sair</button></div></header>
+    <div class="stats">
+      <div class="st"><b>${users.length}</b><span>Cadastrados</span></div>
+      <div class="st pend"><b>${pend.length}</b><span>Aguardando aprovação</span></div>
+      <div class="st"><b>${appr.length}</b><span>Aprovados</span></div>
+      <div class="st act"><b>${act(live)}</b><span>Online agora</span></div>
+      <div class="st act"><b>${act(t0)}</b><span>Ativos hoje</span></div>
+      <div class="st act"><b>${act(w7)}</b><span>Ativos em 7 dias</span></div>
+    </div>
+    <div class="tabs"><button class="${tab === "pend" ? "on" : ""}" data-tab="pend">Pedidos de acesso${pend.length ? `<span class="n">${pend.length}</span>` : ""}</button>
+      <button class="${tab === "users" ? "on" : ""}" data-tab="users">Usuários</button></div>
+    ${tab === "users" ? `<div class="bar"><input id="q" placeholder="Buscar nome, e-mail ou WhatsApp" value="${esc(q)}">
+      <select id="f"><option value="all">Todos</option><option value="approved">Aprovados</option><option value="pending">Pendentes</option><option value="blocked">Bloqueados</option></select></div>` : ""}
+    <div class="list">${list.length ? list.map(row).join("") : `<div class="empty">${tab === "pend" ? "Nenhum pedido aguardando." : "Nenhum usuário encontrado."}</div>`}</div>
+  </div>`;
+  const f = document.getElementById("f"); if (f) { f.value = filt; f.onchange = () => { filt = f.value; view(); }; }
+  const qi = document.getElementById("q"); if (qi) qi.oninput = () => { q = qi.value; const p = qi.selectionStart; view(); const n = document.getElementById("q"); n.focus(); n.setSelectionRange(p, p); };
+  document.getElementById("out").onclick = () => A.signOut(auth);
+  root.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { tab = b.dataset.tab; view(); });
+  root.querySelectorAll("[data-act]").forEach(b => b.onclick = e => { e.stopPropagation(); act2(b.dataset.act, b.dataset.id); });
+  root.querySelectorAll("[data-open]").forEach(b => b.onclick = () => detail(b.dataset.open));
+}
+
+function row(u) {
+  const online = ms(u.lastSeen) > Date.now() - 10 * 60000 && u.status === "approved";
+  const acts = u.status === "pending"
+    ? `<button class="btn g" data-act="approved" data-id="${u.id}">Aprovar</button><button class="btn r" data-act="blocked" data-id="${u.id}">Recusar</button>`
+    : u.status === "approved" ? `<button class="btn r" data-act="blocked" data-id="${u.id}">Bloquear</button>`
+    : `<button class="btn g" data-act="approved" data-id="${u.id}">Liberar</button>`;
+  return `<div class="u clk" data-open="${u.id}">
+    <div class="av">${u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : esc((u.name || "?")[0].toUpperCase())}</div>
+    <div><div class="nm">${esc(u.name || "Sem nome")}<span class="pill ${u.status}">${STATUS[u.status] || u.status}</span>${online ? `<span class="pill on">online</span>` : ""}</div>
+      <div class="ct">${[esc(u.email), wa(u.whatsapp)].filter(Boolean).join(" · ")} · ${u.provider === "google" ? "Google" : "E-mail"}</div>
+      <div class="us">${u.status === "pending" ? `<span>Pediu em <b>${fmt(u.createdAt)}</b></span>` :
+        `<span>Aberturas <b>${u.opens || 0}</b></span><span>Jogos vistos <b>${u.games || 0}</b></span><span>No bilhete <b>${u.tickets || 0}</b></span><span>Cliques Apostar <b>${u.bets || 0}</b></span><span>Último acesso <b>${ago(u.lastSeen)}</b></span>`}</div></div>
+    <div class="acts">${acts}</div></div>`;
+}
+
+async function act2(status, id) {
+  const u = users.find(x => x.id === id);
+  if (status === "blocked" && !confirm(`${u.status === "pending" ? "Recusar o pedido" : "Bloquear o acesso"} de ${u.name || u.email}?`)) return;
+  try { await F.updateDoc(F.doc(db, "users", id), {status, reviewedAt: F.serverTimestamp(), reviewedBy: auth.currentUser.email}); }
+  catch (e) { alert("Não deu para salvar. Verifique as regras do Firestore."); }
+}
+
+async function detail(id) {
+  const u = users.find(x => x.id === id); if (!u) return;
+  const modal = document.getElementById("modal"), sheet = document.getElementById("sheet");
+  modal.hidden = false;
+  sheet.innerHTML = `<h3>${esc(u.name || "Sem nome")}<span class="pill ${u.status}">${STATUS[u.status]}</span></h3>
+    <div class="muted">${[esc(u.email), wa(u.whatsapp)].filter(Boolean).join(" · ")}</div>
+    <div class="muted" style="margin-top:4px">Cadastro: ${fmt(u.createdAt)} · Último acesso: ${fmt(u.lastSeen)}</div>
+    <div class="kv"><div><b>${u.opens || 0}</b><span>Aberturas</span></div><div><b>${u.games || 0}</b><span>Jogos vistos</span></div>
+      <div><b>${u.tickets || 0}</b><span>No bilhete</span></div><div><b>${u.bets || 0}</b><span>Apostar</span></div></div>
+    <div id="days" class="muted">Carregando uso por dia…</div>
+    <button class="btn s" style="width:100%;margin-top:14px" id="close">Fechar</button>`;
+  document.getElementById("close").onclick = () => modal.hidden = true;
+  modal.onclick = e => { if (e.target === modal) modal.hidden = true; };
+  try {
+    const s = await F.getDocs(F.query(F.collection(db, "users", id, "days"), F.orderBy("date", "desc"), F.limit(30)));
+    const rows = s.docs.map(d => d.data());
+    document.getElementById("days").outerHTML = rows.length ? `<table><thead><tr><th>Dia</th><th>Aberturas</th><th>Jogos</th><th>Bilhete</th><th>Apostar</th></tr></thead><tbody>${
+      rows.map(r => `<tr><td>${r.date.split("-").reverse().slice(0, 2).join("/")}</td><td>${r.opens || 0}</td><td>${r.games || 0}</td><td>${r.tickets || 0}</td><td>${r.bets || 0}</td></tr>`).join("")}</tbody></table>`
+      : `<div class="muted">Ainda sem uso registrado.</div>`;
+  } catch (e) { document.getElementById("days").textContent = "Não deu para carregar o uso por dia."; }
+}
+
+A.onAuthStateChanged(auth, u => {
+  if (unsub) { unsub(); unsub = null; }
+  if (!u) return loginView();
+  if (!admins.includes((u.email || "").toLowerCase())) { A.signOut(auth); return loginView("Essa conta não é administradora."); }
+  root.innerHTML = `<div class="wrap muted" style="text-align:center;padding-top:40vh">Carregando…</div>`;
+  unsub = F.onSnapshot(F.collection(db, "users"), s => {
+    users = s.docs.map(d => ({id: d.id, ...d.data()}));
+    if (document.getElementById("modal").hidden) view();
+  }, e => { root.innerHTML = `<div class="wrap"><div class="empty">Sem permissão para ler os usuários. Confira os e-mails de admin nas regras do Firestore.</div></div>`; });
+});
+setInterval(() => { if (auth.currentUser && users.length && document.getElementById("modal").hidden && !document.activeElement?.matches("input")) view(); }, 60000);
+</script>
+</body>
+</html>

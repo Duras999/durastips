@@ -1,0 +1,31 @@
+rules_version = '2';
+// Regras do Firestore do Palpiteiro.
+// Troque os dois e-mails abaixo pelos e-mails dos administradores (os mesmos do firebase-config.js).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in ['admin1@exemplo.com', 'admin2@exemplo.com'];
+    }
+    function isMe(uid) { return request.auth != null && request.auth.uid == uid; }
+    // Campos que o próprio usuário pode mexer (uso do app e WhatsApp). Status só o admin muda.
+    function onlyUsageFields() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['opens', 'games', 'bets', 'tickets', 'lastSeen', 'whatsapp']);
+    }
+
+    match /users/{uid} {
+      allow read: if isMe(uid) || isAdmin();
+      // Novo cadastro sempre entra como "pendente".
+      allow create: if isMe(uid) && request.resource.data.status == 'pending';
+      allow update: if isAdmin() || (isMe(uid) && onlyUsageFields());
+      allow delete: if isAdmin();
+
+      match /days/{day} {
+        allow read: if isMe(uid) || isAdmin();
+        allow write: if isMe(uid) && get(/databases/$(database)/documents/users/$(uid)).data.status == 'approved';
+      }
+    }
+  }
+}
