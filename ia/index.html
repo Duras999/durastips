@@ -77,17 +77,27 @@
   .bigcrest{width:78px;height:78px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-weight:800;font-size:22px;border:3px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(0,0,0,.4)}
   .tname{font-weight:700;font-size:16px}
   .kick{font-size:30px;font-weight:800}
-  .kick small{display:block;font-size:15px;font-weight:500;color:#cfd6dd}
-  .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
-  .tab{padding:12px 14px;color:var(--mut);font-weight:600;font-size:15px;white-space:nowrap;border-bottom:3px solid transparent}
+  .kick small{display:block;font-size:13px;font-weight:500;color:#aab4be;margin-bottom:2px}
+  .tabs{display:flex;border-bottom:1px solid var(--line)}
+  .tab{flex:1;text-align:center;padding:12px 2px;color:var(--mut);font-weight:600;font-size:15px;white-space:nowrap;border-bottom:3px solid transparent}
   .tab.on{color:var(--txt);border-color:var(--txt)}
   .tab .ia{color:var(--green)}
+  .hsum{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;text-align:center;padding:4px 0 14px;border-bottom:1px solid var(--line)}
+  .hsum b{display:block;font-size:24px;font-weight:800;margin-bottom:2px}
+  .hsum span{font-size:13px;color:var(--mut);line-height:1.25}
+  .hh{padding:11px 0;border-bottom:1px solid var(--line)}
+  .hh:last-child{border:0}
+  .hh-date{text-align:center;color:var(--mut);font-size:12px;margin-bottom:5px}
+  .hh-line{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+  .hh-t{font-size:15px;line-height:1.25}
+  .hh-t.r{text-align:right}
+  .hh-s{font-size:16px;font-weight:700;white-space:nowrap;min-width:52px;text-align:center}
   .box{background:var(--card);border-radius:22px;margin:12px 16px;padding:18px 16px}
-  .box h3{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:600;margin-bottom:8px}
+  .box h3{text-align:center;font-size:19px;font-weight:700;margin-bottom:10px}
   .row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}
   .row:last-child{border:0}
-  .row .lbl{flex:1;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:500}
-  .row .val{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:600;min-width:34px;text-align:right}
+  .row .lbl{flex:1;text-align:center;font-size:16px;font-weight:500}
+  .row .val{font-size:17px;font-weight:700;min-width:34px;text-align:right}
   .mini{width:28px;height:28px;font-size:9px}
 
   /* IA */
@@ -406,11 +416,11 @@ async function detailView(id) {
   const head = `<div class="hero fade">
     <div class="hbar"><button onclick="go('')">←</button><span style="font-size:15px;color:#cfd6dd">${esc(m.lname || m.competition)}</span><span></span></div>
     <div class="score"><div>${crest(m.home, m.home_logo, "bigcrest")}<div class="tname">${esc(short(m.home))}</div></div>
-      <div class="kick">${m.status === "upcoming" ? hhmm(m.time) : `${m.home_score ?? "-"} - ${m.away_score ?? "-"}`}<small>${m.status === "upcoming" ? dayLabel() : esc(m.status_text)}</small></div>
+      <div class="kick"><small>${m.status === "upcoming" ? dayLabel() : esc(m.status_text)}</small>${m.status === "upcoming" ? hhmm(m.time) : `${m.home_score ?? "-"} - ${m.away_score ?? "-"}`}</div>
       <div>${crest(m.away, m.away_logo, "bigcrest")}<div class="tname">${esc(short(m.away))}</div></div></div>
     <div class="tabs">
       <button class="tab ${tab === "seq" ? "on" : ""}" onclick="tab='seq';render()">Sequências</button>
-      <button class="tab ${tab === "ia" ? "on" : ""}" onclick="tab='ia';render()">Palpites do Palpiteiro</button>
+      <button class="tab ${tab === "ia" ? "on" : ""}" onclick="tab='ia';render()">Palpites</button>
       <button class="tab ${tab === "h2h" ? "on" : ""}" onclick="tab='h2h';render()">Confrontos</button>
     </div></div>`;
   if (!analysis[id]) {
@@ -442,9 +452,9 @@ async function detailView(id) {
     if (!h || !h.matches || !h.matches.length) body += `<div class="empty">Sem confrontos recentes encontrados.</div>`;
     else {
       const sm = h.summary || {};
-      body += `<div class="row"><span class="lbl">${esc(short(m.home))} ${sm.team1_wins ?? 0} · Empates ${sm.draws ?? 0} · ${esc(short(m.away))} ${sm.team2_wins ?? 0}</span></div>` +
-        h.matches.slice(0, 8).map(x => `<div class="row" style="font-size:15px"><span style="color:var(--mut);width:70px">${new Date(x.time).toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "2-digit", year: "2-digit"})}</span>
-          <span style="flex:1;text-align:right">${esc(short(x.home))}</span><b style="padding:0 10px">${x.home_score ?? "-"} x ${x.away_score ?? "-"}</b><span style="flex:1">${esc(short(x.away))}</span></div>`).join("");
+      body += `<div class="hsum"><div><b>${sm.team1_wins ?? 0}</b><span>${esc(short(m.home))}</span></div><div><b>${sm.draws ?? 0}</b><span>Empates</span></div><div><b>${sm.team2_wins ?? 0}</b><span>${esc(short(m.away))}</span></div></div>` +
+        h.matches.slice(0, 8).map(x => `<div class="hh"><div class="hh-date">${new Date(x.time).toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "2-digit", year: "numeric"})}</div>
+          <div class="hh-line"><span class="hh-t r">${esc(short(x.home))}</span><span class="hh-s">${x.home_score ?? "-"} x ${x.away_score ?? "-"}</span><span class="hh-t">${esc(short(x.away))}</span></div></div>`).join("");
     }
     body += `</div>`;
   }
