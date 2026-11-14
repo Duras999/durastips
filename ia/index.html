@@ -21,7 +21,7 @@
     --yel:#ffd34d; --red:#ff5a5a; --acc:#7c86ff;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
        padding-top:env(safe-area-inset-top);padding-bottom:calc(84px + env(safe-area-inset-bottom));min-height:100vh}
   .wrap{max-width:520px;margin:0 auto}
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
@@ -33,9 +33,15 @@
         display:grid;place-items:center;font-weight:800;color:#04210f;font-size:15px;box-shadow:0 0 18px rgba(25,224,122,.35)}
   .home-btn{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left;-webkit-tap-highlight-color:transparent}
   .home-btn:active{opacity:.7}
-  .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin:0 0 12px}
-  .seg button{flex:1;padding:10px 0;border-radius:10px;font-weight:700;font-size:14px;color:var(--mut)}
-  .seg button.on{background:var(--green);color:#04210f}
+  .seg{display:flex;background:#16191d;border-radius:99px;padding:4px;margin:0 0 12px}
+  .seg button{flex:1;padding:8px 0;border-radius:99px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:20px;letter-spacing:.2px;text-transform:uppercase;color:#f1f2f4}
+  .seg button.on{background:#e9eaec;color:#121417}
+  .ctrl{display:flex;gap:10px;align-items:stretch;margin-top:10px}
+  .ctrl .day{flex:1;margin-top:0}
+  .live{flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:99px;border:1.5px solid #e5484d;color:#e5484d;background:rgba(229,72,77,.08);font-weight:600;font-size:15px}
+  .live i{width:13px;height:13px;border-radius:50%;border:2.5px solid currentColor;display:block}
+  .live.on{background:#e5484d;color:#fff}
+  .live.on i{background:#fff;border-color:#fff;animation:p 1.6s infinite}
   .ptr{position:fixed;top:0;left:50%;transform:translate(-50%,-60px);z-index:30;width:42px;height:42px;border-radius:50%;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;color:var(--green);box-shadow:0 6px 18px rgba(0,0,0,.45);transition:transform .25s}
   .ptr svg{width:22px;height:22px}
   .ptr.spin svg{animation:spin .8s linear infinite}
@@ -193,7 +199,7 @@ function readyView() {
   const today = new Date().toLocaleDateString("en-CA", {timeZone: TZ});
   const list = BILHETES.filter(b => b.data === today);
   if (!list.length) return "";
-  return `<div class="ready-wrap"><div class="ready-title">🔥 Bilhetes prontos do Palpiteiro</div>` +
+  return `<div class="ready-wrap"><div class="ready-title">Bilhetes prontos do Palpiteiro</div>` +
     list.map(b => `<div class="ready fade"><div class="ready-head"><span class="ready-tag">${b.tipo}</span><span class="ready-odd">Odd ${b.odd}</span></div>` +
       b.sel.map(s => `<div class="ready-sel"><div class="g">${s.jogo} · ${s.hora}</div><div class="m">${s.mercado}</div></div>`).join("") +
       `<a class="gen ready-btn" href="${CASA}${b.codigo}" target="_blank" rel="noopener">Apostar</a></div>`).join("") +
@@ -234,10 +240,11 @@ function crest(name, logo, cls = "crest") {
 }
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._);t._=setTimeout(()=>t.classList.remove("show"),1600)}
 function go(h){location.hash=h}
-function goHome(){dayOff=0;filter="";tab="seq";homeTab="jogos";if(location.hash.slice(1)){location.hash=""}else{render();window.scrollTo({top:0,behavior:"smooth"})}}
+function toggleLive(){liveOnly=!liveOnly;if(liveOnly){dayOff=0;delete dayCache[0];for(const k in mem)if(k.includes("/fixtures/"))delete mem[k];try{Object.keys(localStorage).filter(k=>k.startsWith("iag:")&&k.includes("/fixtures/")).forEach(k=>localStorage.removeItem(k))}catch(e){}}render()}
+function goHome(){dayOff=0;filter="";tab="seq";homeTab="jogos";liveOnly=false;if(location.hash.slice(1)){location.hash=""}else{render();window.scrollTo({top:0,behavior:"smooth"})}}
 
 /* ---------- estado ---------- */
-let dayOff = 0, filter = "", games = {}, tab = "seq", homeTab = "jogos";
+let dayOff = 0, filter = "", games = {}, tab = "seq", homeTab = "jogos", liveOnly = false;
 let slip = []; try { slip = JSON.parse(localStorage.getItem("iag-slip2") || "[]"); } catch (e) {}
 const saveSlip = () => { try { localStorage.setItem("iag-slip2", JSON.stringify(slip)); } catch (e) {} badge(); };
 function badge(){const b=$("#bdg");b.hidden=!slip.length;b.textContent=slip.length}
@@ -355,15 +362,16 @@ const credit = `<p class="note">+18 · Aposte com responsabilidade.<br><a href="
 let dayCache = {};
 async function homeView() {
   const head = `<button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>
-    <div class="seg"><button class="${homeTab === "jogos" ? "on" : ""}" onclick="homeTab='jogos';render();window.scrollTo(0,0)">⚽ Jogos do dia</button><button class="${homeTab === "palpites" ? "on" : ""}" onclick="homeTab='palpites';render();window.scrollTo(0,0)">🔥 Palpites</button></div>`;
+    <div class="seg"><button class="${homeTab === "jogos" ? "on" : ""}" onclick="homeTab='jogos';render();window.scrollTo(0,0)">Partidas</button><button class="${homeTab === "palpites" ? "on" : ""}" onclick="homeTab='palpites';render();window.scrollTo(0,0)">Palpites</button></div>`;
   if (homeTab === "palpites") {
     const r = readyView();
-    return `<div class="top">${head}</div>` + (r || `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Jogos do dia</b>.</div>`) + credit;
+    return `<div class="top">${head}</div>` + (r || `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`) + credit;
   }
   const top = `<div class="top">${head}
     <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <input id="q" placeholder="Pesquisar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
-    <div class="day"><button onclick="dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="dayOff++;render()">›</button></div></div>`;
+    <div class="ctrl"><button class="live ${liveOnly ? "on" : ""}" onclick="toggleLive()">Ao vivo <i></i></button>
+    <div class="day"><button onclick="liveOnly=false;dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="liveOnly=false;dayOff++;render()">›</button></div></div></div>`;
   const key = dayOff;
   if (!dayCache[key]) {
     $("#app").innerHTML = top + `<div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Buscando jogos…</div>`;
@@ -374,7 +382,7 @@ async function homeView() {
   const q = filter.toLowerCase();
   let html = top, any = false;
   for (const {L, ms} of dayCache[key]) {
-    const list = ms.filter(m => !q || (m.home + m.away).toLowerCase().includes(q));
+    const list = ms.filter(m => (!q || (m.home + m.away).toLowerCase().includes(q)) && (!liveOnly || m.status === "live"));
     if (!list.length) continue; any = true;
     html += `<div class="league fade"><div class="lhead">${list[0].competition_logo ? `<div class="lbadge img"><img src="${esc(list[0].competition_logo)}" alt="" onerror="this.parentNode.classList.remove('img');this.parentNode.style.background='${L.c}';this.parentNode.style.color='${L.tc}';this.parentNode.textContent='${L.s}'"></div>` : `<div class="lbadge" style="background:${L.c};color:${L.tc}">${L.s}</div>`}
       <div><div class="lname">${L.name}</div><div class="lsub">${list.length} jogo${list.length > 1 ? "s" : ""}</div></div></div>`;
@@ -384,11 +392,11 @@ async function homeView() {
       const sc = (fin || live) ? `<div style="display:flex;flex-direction:column;gap:8px;font-weight:700;margin-right:6px">${m.home_score ?? "-"}<br>${m.away_score ?? "-"}</div>` : "";
       html += `<button class="match" onclick="go('jogo-${mid(m)}')"><div class="time">${left}</div>
         <div class="teams"><div class="team">${crest(m.home, m.home_logo)}${esc(short(m.home))}</div><div class="team">${crest(m.away, m.away_logo)}${esc(short(m.away))}</div></div>
-        ${sc}<span class="ia-tag">✦ Palpiteiro</span></button>`;
+        ${sc}<span class="ia-tag">Palpiteiro</span></button>`;
     }
     html += `</div>`;
   }
-  if (!any) html += `<div class="empty">Nenhum jogo ${q ? "encontrado" : "dos campeonatos principais"} nesse dia.</div>`;
+  if (!any) html += `<div class="empty">${liveOnly ? "Nenhum jogo ao vivo agora." : `Nenhum jogo ${q ? "encontrado" : "dos campeonatos principais"} nesse dia.`}</div>`;
   return html + credit;
 }
 
@@ -402,7 +410,7 @@ async function detailView(id) {
       <div>${crest(m.away, m.away_logo, "bigcrest")}<div class="tname">${esc(short(m.away))}</div></div></div>
     <div class="tabs">
       <button class="tab ${tab === "seq" ? "on" : ""}" onclick="tab='seq';render()">Sequências</button>
-      <button class="tab ${tab === "ia" ? "on" : ""}" onclick="tab='ia';render()"><span class="ia">✦</span> Palpites do Palpiteiro</button>
+      <button class="tab ${tab === "ia" ? "on" : ""}" onclick="tab='ia';render()">Palpites do Palpiteiro</button>
       <button class="tab ${tab === "h2h" ? "on" : ""}" onclick="tab='h2h';render()">Confrontos</button>
     </div></div>`;
   if (!analysis[id]) {
@@ -417,7 +425,7 @@ async function detailView(id) {
       (A.seq.length ? A.seq.map(s => `<div class="row">${crest(s.team, s.logo, "crest mini")}<span class="lbl">${esc(s.lbl)}</span><span class="val">${s.val}</span></div>`).join("")
                     : `<div class="empty">Sem sequências marcantes nos últimos jogos.</div>`) +
       `<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Base: últimos ${A.H.res.length} jogos do ${esc(short(m.home))} e ${A.A.res.length} do ${esc(short(m.away))}.</p></div>
-      <div style="padding:0 16px"><button class="gen" onclick="tab='ia';render()">✦ Ver palpites do Palpiteiro</button></div>`;
+      <div style="padding:0 16px"><button class="gen" onclick="tab='ia';render()">Ver palpites do Palpiteiro</button></div>`;
   } else if (tab === "ia") {
     body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites do Palpiteiro</b></div>`;
     if (!A.picks.length) body += `<div class="empty">Esse jogo não tem tendência forte o bastante. O Palpiteiro prefere não indicar nada.</div>`;
@@ -425,7 +433,7 @@ async function detailView(id) {
       const inSlip = slip.some(s => s.id === id && s.mk === p.mk);
       body += `<div class="pick fade"><div class="mk">${esc(p.mk)}</div><div class="why">${esc(p.why)}</div>
         <div class="conf"><div class="bar"><i style="width:${p.conf}%"></i></div><span class="pct">${p.conf}%</span></div>
-        <button class="add ${inSlip ? "in" : ""}" onclick='toggle(${JSON.stringify(id)},${JSON.stringify(p.mk)},${p.conf})'>${inSlip ? "✓ No bilhete" : "+ Adicionar ao bilhete"}</button></div>`;
+        <button class="add ${inSlip ? "in" : ""}" onclick='toggle(${JSON.stringify(id)},${JSON.stringify(p.mk)},${p.conf})'>${inSlip ? "No bilhete" : "+ Adicionar ao bilhete"}</button></div>`;
     }
     body += `<p style="color:var(--mut);font-size:12px;margin-top:12px;text-align:center">A confiança vem só dos últimos resultados. Não considera desfalques. Não é garantia de resultado.</p></div>`;
   } else {
@@ -460,12 +468,12 @@ function slipView() {
 function toggle(id, mk, conf) {
   const i = slip.findIndex(s => s.id === id && s.mk === mk);
   if (i >= 0) { slip.splice(i, 1); toast("Removido do bilhete"); }
-  else { const m = games[id]; slip.push({id, mk, conf, h: m.home, a: m.away, hl: m.home_logo, when: dayLabel() + " " + hhmm(m.time)}); toast("Adicionado ao bilhete ✓"); }
+  else { const m = games[id]; slip.push({id, mk, conf, h: m.home, a: m.away, hl: m.home_logo, when: dayLabel() + " " + hhmm(m.time)}); toast("Adicionado ao bilhete"); }
   saveSlip(); render();
 }
 function copySlip(silent) {
-  const txt = "🟢 BILHETE PALPITEIRO\n\n" + slip.map(s => `⚽ ${short(s.h)} x ${short(s.a)} (${s.when})\n➡️ ${s.mk}`).join("\n\n") + "\n\n+18 | Aposte com responsabilidade";
-  try { navigator.clipboard.writeText(txt).then(() => toast("Bilhete copiado ✓"), () => { if (!silent) toast("Não deu pra copiar aqui"); }); } catch (e) {}
+  const txt = "BILHETE PALPITEIRO\n\n" + slip.map(s => `${short(s.h)} x ${short(s.a)} (${s.when})\n${s.mk}`).join("\n\n") + "\n\n+18 | Aposte com responsabilidade";
+  try { navigator.clipboard.writeText(txt).then(() => toast("Bilhete copiado"), () => { if (!silent) toast("Não deu pra copiar aqui"); }); } catch (e) {}
 }
 
 let renderId = 0;
