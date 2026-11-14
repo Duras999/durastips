@@ -179,7 +179,7 @@ function readyView() {
   const today = new Date().toLocaleDateString("en-CA", {timeZone: TZ});
   const list = BILHETES.filter(b => b.data === today);
   if (!list.length) return "";
-  return `<div class="ready-wrap"><div class="ready-title">🔥 Bilhetes prontos da IA</div>` +
+  return `<div class="ready-wrap"><div class="ready-title">🔥 Bilhetes prontos do Palpiteiro</div>` +
     list.map(b => `<div class="ready fade"><div class="ready-head"><span class="ready-tag">${b.tipo}</span><span class="ready-odd">Odd ${b.odd}</span></div>` +
       b.sel.map(s => `<div class="ready-sel"><div class="g">${s.jogo} · ${s.hora}</div><div class="m">${s.mercado}</div></div>`).join("") +
       `<a class="gen ready-btn" href="${CASA}${b.codigo}" target="_blank" rel="noopener">Apostar</a></div>`).join("") +
@@ -364,7 +364,7 @@ async function homeView() {
       const sc = (fin || live) ? `<div style="display:flex;flex-direction:column;gap:8px;font-weight:700;margin-right:6px">${m.home_score ?? "-"}<br>${m.away_score ?? "-"}</div>` : "";
       html += `<button class="match" onclick="go('jogo-${mid(m)}')"><div class="time">${left}</div>
         <div class="teams"><div class="team">${crest(m.home, m.home_logo)}${esc(short(m.home))}</div><div class="team">${crest(m.away, m.away_logo)}${esc(short(m.away))}</div></div>
-        ${sc}<span class="ia-tag">✦ IA</span></button>`;
+        ${sc}<span class="ia-tag">✦ Palpiteiro</span></button>`;
     }
     html += `</div>`;
   }
@@ -382,7 +382,7 @@ async function detailView(id) {
       <div>${crest(m.away, m.away_logo, "bigcrest")}<div class="tname">${esc(short(m.away))}</div></div></div>
     <div class="tabs">
       <button class="tab ${tab === "seq" ? "on" : ""}" onclick="tab='seq';render()">Sequências</button>
-      <button class="tab ${tab === "ia" ? "on" : ""}" onclick="tab='ia';render()"><span class="ia">✦</span> Palpites da IA</button>
+      <button class="tab ${tab === "ia" ? "on" : ""}" onclick="tab='ia';render()"><span class="ia">✦</span> Palpites do Palpiteiro</button>
       <button class="tab ${tab === "h2h" ? "on" : ""}" onclick="tab='h2h';render()">Confrontos</button>
     </div></div>`;
   if (!analysis[id]) {
@@ -397,10 +397,10 @@ async function detailView(id) {
       (A.seq.length ? A.seq.map(s => `<div class="row">${crest(s.team, s.logo, "crest mini")}<span class="lbl">${esc(s.lbl)}</span><span class="val">${s.val}</span></div>`).join("")
                     : `<div class="empty">Sem sequências marcantes nos últimos jogos.</div>`) +
       `<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Base: últimos ${A.H.res.length} jogos do ${esc(short(m.home))} e ${A.A.res.length} do ${esc(short(m.away))}.</p></div>
-      <div style="padding:0 16px"><button class="gen" onclick="tab='ia';render()">✦ Ver palpites da IA</button></div>`;
+      <div style="padding:0 16px"><button class="gen" onclick="tab='ia';render()">✦ Ver palpites do Palpiteiro</button></div>`;
   } else if (tab === "ia") {
     body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites do Palpiteiro</b></div>`;
-    if (!A.picks.length) body += `<div class="empty">Esse jogo não tem tendência forte o bastante. A IA prefere não indicar nada.</div>`;
+    if (!A.picks.length) body += `<div class="empty">Esse jogo não tem tendência forte o bastante. O Palpiteiro prefere não indicar nada.</div>`;
     for (const p of A.picks) {
       const inSlip = slip.some(s => s.id === id && s.mk === p.mk);
       body += `<div class="pick fade"><div class="mk">${esc(p.mk)}</div><div class="why">${esc(p.why)}</div>
@@ -425,11 +425,11 @@ async function detailView(id) {
 
 function slipView() {
   let html = `<div class="top"><div class="brand"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
-  if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites da IA</b> e adicione as seleções.</div>`;
+  if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites do Palpiteiro</b> e adicione as seleções.</div>`;
   else {
     html += slip.map((s, i) => `<div class="slip-item">${crest(s.h, s.hl)}<div style="flex:1">
       <div class="g">${esc(short(s.h))} x ${esc(short(s.a))} · ${esc(s.when)}</div><div class="m">${esc(s.mk)}</div>
-      <div class="g" style="color:var(--green);margin-top:3px">Confiança da IA: ${s.conf}%</div></div>
+      <div class="g" style="color:var(--green);margin-top:3px">Confiança do Palpiteiro: ${s.conf}%</div></div>
       <button class="rm" onclick="slip.splice(${i},1);saveSlip();render()">✕</button></div>`).join("");
     const avg = Math.round(slip.reduce((a, s) => a + s.conf, 0) / slip.length);
     html += `<div class="total"><span>${slip.length} seleç${slip.length > 1 ? "ões" : "ão"}</span><span>Confiança média <b style="color:var(--green)">${avg}%</b></span></div>
