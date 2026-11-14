@@ -384,7 +384,7 @@ function slipView() {
       <button class="rm" onclick="slip.splice(${i},1);saveSlip();render()">✕</button></div>`).join("");
     const avg = Math.round(slip.reduce((a, s) => a + s.conf, 0) / slip.length);
     html += `<div class="total"><span>${slip.length} seleç${slip.length > 1 ? "ões" : "ão"}</span><span>Confiança média <b style="color:var(--green)">${avg}%</b></span></div>
-      <button class="gen" style="margin-top:14px" onclick="copySlip()">Copiar bilhete</button>`;
+      <a class="gen" style="margin-top:14px;display:block;text-align:center;text-decoration:none" href="https://a.bingoem.casa/t/NTk2OTEwXzM=" target="_blank" rel="noopener" onclick="copySlip(true)">Apostar</a>`;
   }
   return html + `</div><p class="note">Quanto mais seleções, menor a chance de o bilhete inteiro bater.<br>+18 · Aposte com responsabilidade.</p>`;
 }
@@ -394,9 +394,9 @@ function toggle(id, mk, conf) {
   else { const m = games[id]; slip.push({id, mk, conf, h: m.home, a: m.away, hl: m.home_logo, when: dayLabel() + " " + hhmm(m.time)}); toast("Adicionado ao bilhete ✓"); }
   saveSlip(); render();
 }
-function copySlip() {
+function copySlip(silent) {
   const txt = "🟢 BILHETE I.A DO GREEN\n\n" + slip.map(s => `⚽ ${short(s.h)} x ${short(s.a)} (${s.when})\n➡️ ${s.mk}`).join("\n\n") + "\n\n+18 | Aposte com responsabilidade";
-  navigator.clipboard.writeText(txt).then(() => toast("Bilhete copiado ✓"), () => toast("Não deu pra copiar aqui"));
+  try { navigator.clipboard.writeText(txt).then(() => toast("Bilhete copiado ✓"), () => { if (!silent) toast("Não deu pra copiar aqui"); }); } catch (e) {}
 }
 
 let renderId = 0;
