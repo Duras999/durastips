@@ -31,6 +31,8 @@
   .brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
   .logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--green),#0a8f4c);
         display:grid;place-items:center;font-weight:800;color:#04210f;font-size:15px;box-shadow:0 0 18px rgba(25,224,122,.35)}
+  .home-btn{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left;-webkit-tap-highlight-color:transparent}
+  .home-btn:active{opacity:.7}
   .brand h1{font-size:20px;font-weight:800;letter-spacing:-.3px}
   .brand h1 span{color:var(--green)}
   .search{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:11px 14px;color:var(--mut)}
@@ -220,6 +222,7 @@ function crest(name, logo, cls = "crest") {
 }
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._);t._=setTimeout(()=>t.classList.remove("show"),1600)}
 function go(h){location.hash=h}
+function goHome(){dayOff=0;filter="";tab="seq";if(location.hash.slice(1)){location.hash=""}else{render();window.scrollTo({top:0,behavior:"smooth"})}}
 
 /* ---------- estado ---------- */
 let dayOff = 0, filter = "", games = {}, tab = "seq";
@@ -340,7 +343,7 @@ const credit = `<p class="note">Dados: <a href="https://sportscore.com/" rel="do
 let dayCache = {};
 async function homeView() {
   const top = `<div class="top">
-    <div class="brand"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></div>
+    <button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>
     <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <input id="q" placeholder="Pesquisar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
     <div class="day"><button onclick="dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="dayOff++;render()">›</button></div></div>`;
@@ -424,7 +427,7 @@ async function detailView(id) {
 }
 
 function slipView() {
-  let html = `<div class="top"><div class="brand"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
+  let html = `<div class="top"><div class="brand"><button class="home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"></button><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
   if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites do Palpiteiro</b> e adicione as seleções.</div>`;
   else {
     html += slip.map((s, i) => `<div class="slip-item">${crest(s.h, s.hl)}<div style="flex:1">
