@@ -36,6 +36,10 @@
   .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin:0 0 12px}
   .seg button{flex:1;padding:10px 0;border-radius:10px;font-weight:700;font-size:14px;color:var(--mut)}
   .seg button.on{background:var(--green);color:#04210f}
+  .ptr{position:fixed;top:0;left:50%;transform:translate(-50%,-60px);z-index:30;width:42px;height:42px;border-radius:50%;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;color:var(--green);box-shadow:0 6px 18px rgba(0,0,0,.45);transition:transform .25s}
+  .ptr svg{width:22px;height:22px}
+  .ptr.spin svg{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .brand h1{font-size:20px;font-weight:800;letter-spacing:-.3px}
   .brand h1 span{color:var(--green)}
   .search{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:11px 14px;color:var(--mut)}
@@ -151,6 +155,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v4a2 2 0 000 4v4H4v-4a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>Meu bilhete<span class="badge" id="bdg" hidden>0</span></button>
 </nav>
 <div class="toast" id="toast"></div>
+<div class="ptr" id="ptr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg></div>
 
 <script>
 /* ===== Palpiteiro — dados reais via SportScore (grátis, sem chave) ===== */
@@ -478,6 +483,26 @@ async function render(keepFocus) {
   if (keepFocus) { const q = $("#q"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
 }
 window.addEventListener("hashchange", () => { tab = "seq"; render(); window.scrollTo(0, 0); });
+/* ---------- arrastar pra baixo para atualizar ---------- */
+(function(){
+  const el = $("#ptr"), T = 70; let y0 = null, d = 0, busy = false;
+  const pos = p => el.style.transform = `translate(-50%,${p - 50}px) rotate(${p * 4}deg)`;
+  addEventListener("touchstart", e => { y0 = (!busy && window.scrollY <= 0 && e.touches.length === 1) ? e.touches[0].clientY : null; d = 0; }, {passive: true});
+  addEventListener("touchmove", e => {
+    if (y0 == null) return;
+    d = (e.touches[0].clientY - y0) * 0.5;
+    if (d <= 0) { el.style.transform = ""; return; }
+    el.style.transition = "none"; pos(Math.min(d, T + 30));
+  }, {passive: true});
+  addEventListener("touchend", () => {
+    if (y0 == null) return; y0 = null; el.style.transition = "";
+    if (d >= T) {
+      busy = true; el.classList.add("spin"); pos(T);
+      try { Object.keys(localStorage).filter(k => k.startsWith("iag:")).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+      setTimeout(() => location.reload(), 300);
+    } else el.style.transform = "";
+  });
+})();
 badge(); render();
 </script>
 </body>
