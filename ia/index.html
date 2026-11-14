@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>I.A do Green</title>
+<title>Palpiteiro</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -135,7 +135,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ===== I.A do Green — dados reais via SportScore (grátis, sem chave) ===== */
+/* ===== Palpiteiro — dados reais via SportScore (grátis, sem chave) ===== */
 const API = "https://sportscore.com/api/v1";
 const LEAGUES = [
   {slug:"brazilian-serie-a", name:"Brasileirão Série A", s:"A", c:"#c8f03c", tc:"#0b0e12"},
@@ -331,7 +331,7 @@ const credit = `<p class="note">Dados: <a href="https://sportscore.com/" rel="do
 let dayCache = {};
 async function homeView() {
   const top = `<div class="top">
-    <div class="brand"><div class="logo">IA</div><h1>I.A do <span>Green</span></h1></div>
+    <div class="brand"><div class="logo">P</div><h1>Palpi<span>teiro</span></h1></div>
     <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <input id="q" placeholder="Pesquisar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
     <div class="day"><button onclick="dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="dayOff++;render()">›</button></div></div>`;
@@ -377,7 +377,7 @@ async function detailView(id) {
       <button class="tab ${tab === "h2h" ? "on" : ""}" onclick="tab='h2h';render()">Confrontos</button>
     </div></div>`;
   if (!analysis[id]) {
-    $("#app").innerHTML = head + `<div class="box"><div class="thinking"><span class="dots"><i></i><i></i><i></i></span> IA do Green analisando os últimos jogos…</div></div>`;
+    $("#app").innerHTML = head + `<div class="box"><div class="thinking"><span class="dots"><i></i><i></i><i></i></span> Palpiteiro analisando os últimos jogos…</div></div>`;
     try { await analyze(id); } catch (e) { return head + `<div class="box"><div class="empty">Não consegui buscar os dados desse jogo agora.</div></div>`; }
     if (location.hash.slice(1) !== "jogo-" + id) return null;
   }
@@ -390,7 +390,7 @@ async function detailView(id) {
       `<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Base: últimos ${A.H.res.length} jogos do ${esc(short(m.home))} e ${A.A.res.length} do ${esc(short(m.away))}.</p></div>
       <div style="padding:0 16px"><button class="gen" onclick="tab='ia';render()">✦ Ver palpites da IA</button></div>`;
   } else if (tab === "ia") {
-    body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites da IA do Green</b></div>`;
+    body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites do Palpiteiro</b></div>`;
     if (!A.picks.length) body += `<div class="empty">Esse jogo não tem tendência forte o bastante. A IA prefere não indicar nada.</div>`;
     for (const p of A.picks) {
       const inSlip = slip.some(s => s.id === id && s.mk === p.mk);
@@ -415,7 +415,7 @@ async function detailView(id) {
 }
 
 function slipView() {
-  let html = `<div class="top"><div class="brand"><div class="logo">IA</div><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
+  let html = `<div class="top"><div class="brand"><div class="logo">P</div><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
   if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites da IA</b> e adicione as seleções.</div>`;
   else {
     html += slip.map((s, i) => `<div class="slip-item">${crest(s.h, s.hl)}<div style="flex:1">
@@ -435,7 +435,7 @@ function toggle(id, mk, conf) {
   saveSlip(); render();
 }
 function copySlip(silent) {
-  const txt = "🟢 BILHETE I.A DO GREEN\n\n" + slip.map(s => `⚽ ${short(s.h)} x ${short(s.a)} (${s.when})\n➡️ ${s.mk}`).join("\n\n") + "\n\n+18 | Aposte com responsabilidade";
+  const txt = "🟢 BILHETE PALPITEIRO\n\n" + slip.map(s => `⚽ ${short(s.h)} x ${short(s.a)} (${s.when})\n➡️ ${s.mk}`).join("\n\n") + "\n\n+18 | Aposte com responsabilidade";
   try { navigator.clipboard.writeText(txt).then(() => toast("Bilhete copiado ✓"), () => { if (!silent) toast("Não deu pra copiar aqui"); }); } catch (e) {}
 }
 
