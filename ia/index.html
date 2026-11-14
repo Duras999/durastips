@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>I.A do Green</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0e12; --card:#161b21; --card2:#1d242c; --line:#252d36;
+    --txt:#eef2f6; --mut:#8a96a3; --green:#19e07a; --green2:#0fb862;
+    --yel:#ffd34d; --red:#ff5a5a; --acc:#7c86ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;
+       padding-top:env(safe-area-inset-top);padding-bottom:calc(84px + env(safe-area-inset-bottom));min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  /* topo */
+  .top{position:sticky;top:0;z-index:5;background:linear-gradient(#0b0e12 80%,rgba(11,14,18,0));padding:14px 16px 10px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--green),#0a8f4c);
+        display:grid;place-items:center;font-weight:800;color:#04210f;font-size:15px;box-shadow:0 0 18px rgba(25,224,122,.35)}
+  .brand h1{font-size:20px;font-weight:800;letter-spacing:-.3px}
+  .brand h1 span{color:var(--green)}
+  .search{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:11px 14px;color:var(--mut)}
+  .search input{flex:1;background:none;border:0;outline:0;color:var(--txt);font:inherit;font-size:15px}
+  .chips{display:flex;gap:8px;margin-top:12px;overflow-x:auto;scrollbar-width:none}
+  .chip{white-space:nowrap;padding:8px 14px;border-radius:99px;background:var(--card);font-weight:600;font-size:14px;color:var(--mut)}
+  .chip.on{background:var(--txt);color:#0b0e12}
+  .chip.live{border:1.5px solid #6b2a2a;color:var(--red)}
+  .day{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:99px;padding:8px 16px;margin-top:10px;font-weight:600;color:var(--acc)}
+
+  /* ligas e jogos */
+  .league{background:var(--card);border-radius:22px;margin:12px 16px;padding:6px 0 4px;overflow:hidden}
+  .lhead{display:flex;align-items:center;gap:12px;padding:12px 16px}
+  .lbadge{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:13px}
+  .lname{font-weight:700;font-size:15px}
+  .lsub{color:var(--mut);font-size:13px;margin-top:2px}
+  .match{display:flex;align-items:center;gap:14px;padding:12px 16px;border-top:1px solid var(--line);width:100%;text-align:left}
+  .match:active{background:var(--card2)}
+  .time{width:46px;color:var(--mut);font-size:14px;font-variant-numeric:tabular-nums}
+  .teams{flex:1;display:flex;flex-direction:column;gap:8px}
+  .team{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500}
+  .crest{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:800;flex:none;border:2px solid rgba(255,255,255,.85)}
+  .ia-tag{font-size:11px;font-weight:700;color:var(--green);background:rgba(25,224,122,.12);padding:5px 9px;border-radius:99px;white-space:nowrap}
+
+  /* detalhe do jogo */
+  .hero{position:relative;padding:14px 16px 0;background:radial-gradient(120% 90% at 20% 0%,var(--h1,#2a4a1a) 0%,transparent 65%),radial-gradient(120% 90% at 85% 0%,var(--h2,#333) 0%,transparent 60%)}
+  .hbar{display:flex;justify-content:space-between;align-items:center;font-size:22px}
+  .score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:18px 0 14px;text-align:center}
+  .bigcrest{width:78px;height:78px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-weight:800;font-size:22px;border:3px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .tname{font-weight:700;font-size:16px}
+  .kick{font-size:30px;font-weight:800}
+  .kick small{display:block;font-size:15px;font-weight:500;color:#cfd6dd}
+  .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
+  .tab{padding:12px 14px;color:var(--mut);font-weight:600;font-size:15px;white-space:nowrap;border-bottom:3px solid transparent}
+  .tab.on{color:var(--txt);border-color:var(--txt)}
+  .tab .ia{color:var(--green)}
+  .box{background:var(--card);border-radius:22px;margin:12px 16px;padding:18px 16px}
+  .box h3{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:600;margin-bottom:8px}
+  .row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}
+  .row:last-child{border:0}
+  .row .lbl{flex:1;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:500}
+  .row .val{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:600;min-width:34px;text-align:right}
+  .mini{width:28px;height:28px;font-size:9px}
+
+  /* IA */
+  .iahead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .pulse{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(25,224,122,.6);animation:p 1.6s infinite}
+  @keyframes p{70%{box-shadow:0 0 0 10px rgba(25,224,122,0)}100%{box-shadow:0 0 0 0 rgba(25,224,122,0)}}
+  .pick{background:var(--card2);border-radius:16px;padding:14px;margin-top:10px;border:1px solid var(--line)}
+  .pick .mk{font-weight:800;font-size:17px}
+  .pick .why{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.45}
+  .conf{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .bar{flex:1;height:8px;background:#2a323c;border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green2),var(--green))}
+  .pct{font-weight:800;font-size:14px;color:var(--green);width:42px;text-align:right}
+  .add{margin-top:12px;width:100%;padding:11px;border-radius:12px;background:rgba(25,224,122,.12);color:var(--green);font-weight:700}
+  .add.in{background:var(--green);color:#04210f}
+  .gen{width:100%;padding:15px;border-radius:16px;background:linear-gradient(135deg,var(--green),var(--green2));color:#04210f;font-weight:800;font-size:16px;margin-top:6px}
+  .thinking{display:flex;align-items:center;gap:10px;color:var(--mut);padding:18px 4px}
+  .dots i{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--green);animation:d 1s infinite}
+  .dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+  @keyframes d{50%{opacity:.2;transform:translateY(-3px)}}
+
+  /* bilhete */
+  .slip-item{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
+  .slip-item:last-child{border:0}
+  .slip-item .g{color:var(--mut);font-size:13px}
+  .slip-item .m{font-weight:700;margin-top:3px}
+  .rm{color:var(--mut);font-size:20px;padding:0 4px}
+  .empty{text-align:center;color:var(--mut);padding:40px 20px;line-height:1.6}
+  .total{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px dashed #3a444f}
+
+  .note{margin:6px 16px 20px;color:#5f6b77;font-size:12px;text-align:center;line-height:1.5}
+  .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));width:min(92%,480px);
+       display:flex;background:rgba(30,36,44,.92);backdrop-filter:blur(14px);border-radius:99px;padding:6px;z-index:9;border:1px solid #2c3540}
+  .nav button{flex:1;padding:9px 0;border-radius:99px;font-size:12px;font-weight:600;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+  .nav button.on{background:#2b333d;color:var(--green)}
+  .nav svg{width:22px;height:22px}
+  .badge{position:absolute;top:3px;right:calc(50% - 22px);background:var(--red);color:#fff;font-size:10px;font-weight:800;border-radius:99px;padding:1px 6px}
+  .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--green);color:#04210f;font-weight:700;padding:10px 18px;border-radius:99px;transition:.25s;z-index:20;font-size:14px;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .fade{animation:f .25s ease}
+  @keyframes f{from{opacity:0;transform:translateY(8px)}}
+.crest.img,.bigcrest.img{background:#fff;overflow:hidden;border-color:rgba(255,255,255,.9)}
+  .crest.img img,.bigcrest.img img{width:86%;height:86%;object-fit:contain}
+  .crest{background:#2a323c;color:#fff}
+  .bigcrest{background:#2a323c;color:#fff}
+  .day button{color:var(--acc);font-size:20px;padding:0 6px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<nav class="nav">
+  <button id="nav-jogos" class="on" onclick="go('')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/></svg>Jogos</button>
+  <button id="nav-bilhete" onclick="go('bilhete')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v4a2 2 0 000 4v4H4v-4a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>Meu bilhete<span class="badge" id="bdg" hidden>0</span></button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== I.A do Green — dados reais via SportScore (grátis, sem chave) ===== */
+const API = "https://sportscore.com/api/v1";
+const LEAGUES = [
+  {slug:"brazilian-serie-a", name:"Brasileirão Série A", s:"A", c:"#c8f03c", tc:"#0b0e12"},
+  {slug:"brazilian-serie-b", name:"Brasileirão Série B", s:"B", c:"#2b2bd6", tc:"#ffd400"},
+  {slug:"conmebol-copa-libertadores", name:"Libertadores", s:"LIB", c:"#c9a227", tc:"#111"},
+  {slug:"uefa-champions-league", name:"Champions League", s:"UCL", c:"#0b1f6b", tc:"#fff"},
+  {slug:"english-premier-league", name:"Premier League", s:"PL", c:"#3d0a49", tc:"#fff"},
+  {slug:"spanish-laliga", name:"LaLiga", s:"LL", c:"#ff4b44", tc:"#fff"},
+  {slug:"italian-serie-a", name:"Serie A (Itália)", s:"ITA", c:"#0a6cff", tc:"#fff"},
+  {slug:"bundesliga", name:"Bundesliga", s:"BUN", c:"#d20515", tc:"#fff"}
+];
+const TZ = "America/Sao_Paulo";
+
+/* ---------- cache simples ---------- */
+const mem = {};
+async function getJSON(url, ttlMin) {
+  const now = Date.now();
+  if (mem[url] && now - mem[url].t < ttlMin * 60000) return mem[url].d;
+  try { const c = JSON.parse(localStorage.getItem("iag:" + url) || "null");
+        if (c && now - c.t < ttlMin * 60000) { mem[url] = c; return c.d; } } catch (e) {}
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const d = await r.json();
+  mem[url] = {t: now, d};
+  try { localStorage.setItem("iag:" + url, JSON.stringify(mem[url])); } catch (e) {}
+  return d;
+}
+
+/* ---------- utilitários ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const slugify = n => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const NAMES = {"Atlético Mineiro":"Atlético-MG","Vasco da Gama":"Vasco","Atletico Clube Goianiense":"Atlético-GO","Sport Club do Recife":"Sport",
+  "Esporte Clube Juventude":"Juventude","Goias Esporte Clube":"Goiás","America MG":"América-MG","Avaí FC":"Avaí","CRB AL":"CRB","Ceara":"Ceará",
+  "Cuiaba":"Cuiabá","Criciuma":"Criciúma","Gremio Novorizontino":"Novorizontino","Botafogo SP":"Botafogo-SP","Gremio":"Grêmio","Goias":"Goiás",
+  "Athletico Paranaense":"Athletico-PR","Atletico Mineiro":"Atlético-MG","Sao Paulo":"São Paulo","Red Bull Bragantino":"Bragantino"};
+const short = n => { let x = String(n || "").replace(/\s*-\s*[A-Z]{2}$/, "").replace(/ Saf\b/i, "").trim(); return NAMES[x] || x; };
+const hhmm = iso => new Date(iso).toLocaleTimeString("pt-BR", {timeZone: TZ, hour: "2-digit", minute: "2-digit"});
+const localDay = d => d.toLocaleDateString("en-CA", {timeZone: TZ});
+const mid = m => (m.url || "").split("/").filter(Boolean).pop();
+function crest(name, logo, cls = "crest") {
+  const ini = esc(short(name).slice(0, 3).toUpperCase());
+  return logo ? `<span class="${cls} img"><img src="${esc(logo)}" alt="" onerror="this.parentNode.textContent='${ini}'"></span>`
+              : `<span class="${cls}">${ini}</span>`;
+}
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._);t._=setTimeout(()=>t.classList.remove("show"),1600)}
+function go(h){location.hash=h}
+
+/* ---------- estado ---------- */
+let dayOff = 0, filter = "", games = {}, tab = "seq";
+let slip = []; try { slip = JSON.parse(localStorage.getItem("iag-slip2") || "[]"); } catch (e) {}
+const saveSlip = () => { try { localStorage.setItem("iag-slip2", JSON.stringify(slip)); } catch (e) {} badge(); };
+function badge(){const b=$("#bdg");b.hidden=!slip.length;b.textContent=slip.length}
+
+/* ---------- jogos do dia ---------- */
+async function loadDay() {
+  const target = new Date(Date.now() + dayOff * 86400000);
+  const day = localDay(target);
+  // jogos noturnos no Brasil caem no dia seguinte em UTC: buscamos os dois dias
+  const d2 = new Date(target.getTime() + 86400000).toISOString().slice(0, 10);
+  const d1 = target.toISOString().slice(0, 10);
+  const days = [...new Set([d1, d2])];
+  const out = [];
+  await Promise.all(LEAGUES.map(async L => {
+    const lists = await Promise.all(days.map(d =>
+      getJSON(`${API}/fixtures/?sport=football&date=${d}&competition=${L.slug}&limit=100`, 10).catch(() => ({matches: []}))));
+    const seen = new Set();
+    const ms = lists.flatMap(x => x.matches || []).filter(m => {
+      const id = mid(m); if (seen.has(id)) return false; seen.add(id);
+      return localDay(new Date(m.time)) === day;
+    }).sort((a, b) => a.time.localeCompare(b.time));
+    ms.forEach(m => { m.lname = L.name; games[mid(m)] = m; });
+    if (ms.length) out.push({L, ms});
+  }));
+  return LEAGUES.map(L => out.find(o => o.L === L)).filter(Boolean);
+}
+
+/* ---------- forma do time ---------- */
+async function teamForm(name) {
+  let slug = slugify(name), t;
+  try { t = await getJSON(`${API}/team/?slug=${slug}`, 360); } catch (e) {}
+  if (!t || !t.matches || !t.matches.length) {
+    const s = await getJSON(`${API}/search/?q=${encodeURIComponent(short(name))}`, 1440).catch(() => ({}));
+    const hit = (s.teams || [])[0];
+    if (hit) { slug = hit.slug; t = await getJSON(`${API}/team/?slug=${slug}`, 360).catch(() => null); }
+  }
+  const fin = ((t && t.matches) || []).filter(m => m.status === "finished" && m.home_score != null)
+    .sort((a, b) => b.time.localeCompare(a.time)).slice(0, 6);
+  const res = fin.map(m => {
+    const home = m.home === (t.team?.name || name) || slugify(m.home) === slug;
+    const gf = +(home ? m.home_score : m.away_score), ga = +(home ? m.away_score : m.home_score);
+    return {gf, ga, r: gf > ga ? "V" : gf === ga ? "E" : "D", opp: home ? m.away : m.home, home, date: m.time};
+  });
+  return {slug, res};
+}
+function streak(res, f) { let n = 0; for (const x of res) { if (f(x)) n++; else break; } return n; }
+function stats(res) {
+  const n = res.length || 1;
+  return {
+    n: res.length,
+    o25: res.filter(x => x.gf + x.ga > 2.5).length, btts: res.filter(x => x.gf > 0 && x.ga > 0).length,
+    scored: res.filter(x => x.gf > 0).length, conceded: res.filter(x => x.ga > 0).length,
+    ppg: res.reduce((a, x) => a + (x.r === "V" ? 3 : x.r === "E" ? 1 : 0), 0) / n,
+    noWin: streak(res, x => x.r !== "V"), unbeaten: streak(res, x => x.r !== "D"), wins: streak(res, x => x.r === "V"),
+    losses: streak(res, x => x.r === "D"), scoredS: streak(res, x => x.gf > 0), concS: streak(res, x => x.ga > 0),
+    clean: streak(res, x => x.ga === 0), blank: streak(res, x => x.gf === 0)
+  };
+}
+function sequences(team, logo, s) {
+  const L = [], n = s.n;
+  if (!n) return L;
+  const add = (lbl, val, k) => L.push({team, logo, lbl, val, k});
+  if (s.wins >= 2) add("Vitórias seguidas", s.wins, s.wins);
+  if (s.noWin >= 3) add("Sem vitórias", s.noWin, s.noWin);
+  if (s.unbeaten >= 3 && s.wins < s.unbeaten) add("Invicto", s.unbeaten, s.unbeaten);
+  if (s.losses >= 2) add("Derrotas seguidas", s.losses, s.losses);
+  if (s.scoredS >= 3) add("Marcou gol", s.scoredS, s.scoredS);
+  if (s.concS >= 3) add("Sofreu gol", s.concS, s.concS);
+  if (s.clean >= 2) add("Sem sofrer gol", s.clean, s.clean);
+  if (s.blank >= 2) add("Sem marcar", s.blank, s.blank);
+  if (s.o25 / n >= .6) add("Mais de 2.5 gols", `${s.o25}/${n}`, s.o25 / n * 6);
+  if ((n - s.o25) / n >= .6) add("Menos de 2.5 gols", `${n - s.o25}/${n}`, (n - s.o25) / n * 6);
+  if (s.btts / n >= .6) add("Ambos marcam", `${s.btts}/${n}`, s.btts / n * 6);
+  if ((n - s.btts) / n >= .67) add("Ambos não marcam", `${n - s.btts}/${n}`, (n - s.btts) / n * 6);
+  return L;
+}
+function picks(m, H, A) {
+  const h = H.st, a = A.st, P = [];
+  if (!h.n || !a.n) return P;
+  const hn = short(m.home), an = short(m.away);
+  const pct = (x, n) => x / n;
+  const o = (pct(h.o25, h.n) + pct(a.o25, a.n)) / 2;
+  const bt = (pct(h.btts, h.n) + pct(a.btts, a.n)) / 2;
+  const add = (mk, score, why) => P.push({mk, conf: Math.max(52, Math.min(86, Math.round(score))), why});
+  if (o >= .6) add("Mais de 2.5 gols", 40 + o * 50, `Teve mais de 2.5 gols em ${h.o25}/${h.n} jogos do ${hn} e ${a.o25}/${a.n} do ${an}.`);
+  if (o <= .4) add("Menos de 2.5 gols", 40 + (1 - o) * 50, `Teve menos de 2.5 gols em ${h.n - h.o25}/${h.n} jogos do ${hn} e ${a.n - a.o25}/${a.n} do ${an}.`);
+  if (bt >= .6) add("Ambas marcam: Sim", 40 + bt * 50, `Os dois marcaram em ${h.btts}/${h.n} jogos do ${hn} e ${a.btts}/${a.n} do ${an}.`);
+  if (bt <= .3) add("Ambas marcam: Não", 40 + (1 - bt) * 45, `Só ${h.btts}/${h.n} jogos do ${hn} e ${a.btts}/${a.n} do ${an} tiveram gol dos dois lados.`);
+  const d = h.ppg - a.ppg;
+  if (d >= 1.3) add(`Vitória do ${hn}`, 50 + d * 14, `${hn} faz ${h.ppg.toFixed(1)} pontos por jogo e ${an} só ${a.ppg.toFixed(1)}, e o mando é do ${hn}.`);
+  else if (d >= .6) add(`${hn} ou empate`, 55 + d * 18, `${hn} vive momento melhor (${h.ppg.toFixed(1)} x ${a.ppg.toFixed(1)} pontos por jogo) e joga em casa.`);
+  if (d <= -1.0) add(`${an} ou empate`, 50 + -d * 16, `${an} está bem melhor (${a.ppg.toFixed(1)} x ${h.ppg.toFixed(1)} pontos por jogo), mesmo fora de casa.`);
+  if (pct(h.scored, h.n) >= .8 && pct(a.conceded, a.n) >= .65)
+    add(`${hn} marca: Sim`, 40 + (pct(h.scored, h.n) + pct(a.conceded, a.n)) * 25, `${hn} marcou em ${h.scored}/${h.n} e ${an} sofreu gol em ${a.conceded}/${a.n}.`);
+  if (pct(a.scored, a.n) >= .8 && pct(h.conceded, h.n) >= .65)
+    add(`${an} marca: Sim`, 38 + (pct(a.scored, a.n) + pct(h.conceded, h.n)) * 25, `${an} marcou em ${a.scored}/${a.n} e ${hn} sofreu gol em ${h.conceded}/${h.n}.`);
+  return P.sort((x, y) => y.conf - x.conf).slice(0, 3);
+}
+const analysis = {};
+async function analyze(id) {
+  if (analysis[id]) return analysis[id];
+  const m = games[id];
+  const [H, A] = await Promise.all([teamForm(m.home), teamForm(m.away)]);
+  H.st = stats(H.res); A.st = stats(A.res);
+  const h2h = await getJSON(`${API}/h2h/?team1=${H.slug}&team2=${A.slug}`, 720).catch(() => null);
+  const seq = [...sequences(short(m.home), m.home_logo, H.st), ...sequences(short(m.away), m.away_logo, A.st)].sort((x, y) => y.k - x.k);
+  return analysis[id] = {H, A, h2h, seq, picks: picks(m, H, A)};
+}
+
+/* ---------- telas ---------- */
+const dayLabel = () => dayOff === 0 ? "Hoje" : dayOff === 1 ? "Amanhã" : dayOff === -1 ? "Ontem" :
+  new Date(Date.now() + dayOff * 86400000).toLocaleDateString("pt-BR", {timeZone: TZ, weekday: "short", day: "2-digit", month: "2-digit"});
+const credit = `<p class="note">Dados: <a href="https://sportscore.com/" rel="dofollow" target="_blank" style="color:var(--green)">Powered by SportScore</a><br>+18 · Aposte com responsabilidade.</p>`;
+
+let dayCache = {};
+async function homeView() {
+  const top = `<div class="top">
+    <div class="brand"><div class="logo">IA</div><h1>I.A do <span>Green</span></h1></div>
+    <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" placeholder="Pesquisar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
+    <div class="day"><button onclick="dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="dayOff++;render()">›</button></div></div>`;
+  const key = dayOff;
+  if (!dayCache[key]) {
+    $("#app").innerHTML = top + `<div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Buscando jogos…</div>`;
+    try { dayCache[key] = await loadDay(); }
+    catch (e) { return top + `<div class="empty">Não consegui carregar os jogos. Confere a internet e tenta de novo.</div>`; }
+    if (key !== dayOff) return null;
+  }
+  const q = filter.toLowerCase();
+  let html = top, any = false;
+  for (const {L, ms} of dayCache[key]) {
+    const list = ms.filter(m => !q || (m.home + m.away).toLowerCase().includes(q));
+    if (!list.length) continue; any = true;
+    html += `<div class="league fade"><div class="lhead"><div class="lbadge" style="background:${L.c};color:${L.tc}">${L.s}</div>
+      <div><div class="lname">${L.name}</div><div class="lsub">${list.length} jogo${list.length > 1 ? "s" : ""}</div></div></div>`;
+    for (const m of list) {
+      const live = m.status === "live", fin = m.status === "finished";
+      const left = fin || live ? `<span style="color:${live ? "var(--red)" : "var(--mut)"}">${live ? "AO VIVO" : "Fim"}</span>` : hhmm(m.time);
+      const sc = (fin || live) ? `<div style="display:flex;flex-direction:column;gap:8px;font-weight:700;margin-right:6px">${m.home_score ?? "-"}<br>${m.away_score ?? "-"}</div>` : "";
+      html += `<button class="match" onclick="go('jogo-${mid(m)}')"><div class="time">${left}</div>
+        <div class="teams"><div class="team">${crest(m.home, m.home_logo)}${esc(short(m.home))}</div><div class="team">${crest(m.away, m.away_logo)}${esc(short(m.away))}</div></div>
+        ${sc}<span class="ia-tag">✦ IA</span></button>`;
+    }
+    html += `</div>`;
+  }
+  if (!any) html += `<div class="empty">Nenhum jogo ${q ? "encontrado" : "dos campeonatos principais"} nesse dia.</div>`;
+  return html + credit;
+}
+
+async function detailView(id) {
+  const m = games[id];
+  if (!m) { go(""); return null; }
+  const head = `<div class="hero fade">
+    <div class="hbar"><button onclick="go('')">←</button><span style="font-size:15px;color:#cfd6dd">${esc(m.lname || m.competition)}</span><span></span></div>
+    <div class="score"><div>${crest(m.home, m.home_logo, "bigcrest")}<div class="tname">${esc(short(m.home))}</div></div>
+      <div class="kick">${m.status === "upcoming" ? hhmm(m.time) : `${m.home_score ?? "-"} - ${m.away_score ?? "-"}`}<small>${m.status === "upcoming" ? dayLabel() : esc(m.status_text)}</small></div>
+      <div>${crest(m.away, m.away_logo, "bigcrest")}<div class="tname">${esc(short(m.away))}</div></div></div>
+    <div class="tabs">
+      <button class="tab ${tab === "seq" ? "on" : ""}" onclick="tab='seq';render()">Sequências</button>
+      <button class="tab ${tab === "ia" ? "on" : ""}" onclick="tab='ia';render()"><span class="ia">✦</span> Palpites da IA</button>
+      <button class="tab ${tab === "h2h" ? "on" : ""}" onclick="tab='h2h';render()">Confrontos</button>
+    </div></div>`;
+  if (!analysis[id]) {
+    $("#app").innerHTML = head + `<div class="box"><div class="thinking"><span class="dots"><i></i><i></i><i></i></span> IA do Green analisando os últimos jogos…</div></div>`;
+    try { await analyze(id); } catch (e) { return head + `<div class="box"><div class="empty">Não consegui buscar os dados desse jogo agora.</div></div>`; }
+    if (location.hash.slice(1) !== "jogo-" + id) return null;
+  }
+  const A = analysis[id];
+  let body = "";
+  if (tab === "seq") {
+    body = `<div class="box fade"><h3>Sequências</h3>` +
+      (A.seq.length ? A.seq.map(s => `<div class="row">${crest(s.team, s.logo, "crest mini")}<span class="lbl">${esc(s.lbl)}</span><span class="val">${s.val}</span></div>`).join("")
+                    : `<div class="empty">Sem sequências marcantes nos últimos jogos.</div>`) +
+      `<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Base: últimos ${A.H.res.length} jogos do ${esc(short(m.home))} e ${A.A.res.length} do ${esc(short(m.away))}.</p></div>
+      <div style="padding:0 16px"><button class="gen" onclick="tab='ia';render()">✦ Ver palpites da IA</button></div>`;
+  } else if (tab === "ia") {
+    body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites da IA do Green</b></div>`;
+    if (!A.picks.length) body += `<div class="empty">Esse jogo não tem tendência forte o bastante. A IA prefere não indicar nada.</div>`;
+    for (const p of A.picks) {
+      const inSlip = slip.some(s => s.id === id && s.mk === p.mk);
+      body += `<div class="pick fade"><div class="mk">${esc(p.mk)}</div><div class="why">${esc(p.why)}</div>
+        <div class="conf"><div class="bar"><i style="width:${p.conf}%"></i></div><span class="pct">${p.conf}%</span></div>
+        <button class="add ${inSlip ? "in" : ""}" onclick='toggle(${JSON.stringify(id)},${JSON.stringify(p.mk)},${p.conf})'>${inSlip ? "✓ No bilhete" : "+ Adicionar ao bilhete"}</button></div>`;
+    }
+    body += `<p style="color:var(--mut);font-size:12px;margin-top:12px;text-align:center">A confiança vem só dos últimos resultados. Não considera desfalques. Não é garantia de resultado.</p></div>`;
+  } else {
+    const h = A.h2h;
+    body = `<div class="box fade"><h3>Confrontos diretos</h3>`;
+    if (!h || !h.matches || !h.matches.length) body += `<div class="empty">Sem confrontos recentes encontrados.</div>`;
+    else {
+      const sm = h.summary || {};
+      body += `<div class="row"><span class="lbl">${esc(short(m.home))} ${sm.team1_wins ?? 0} · Empates ${sm.draws ?? 0} · ${esc(short(m.away))} ${sm.team2_wins ?? 0}</span></div>` +
+        h.matches.slice(0, 8).map(x => `<div class="row" style="font-size:15px"><span style="color:var(--mut);width:70px">${new Date(x.time).toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "2-digit", year: "2-digit"})}</span>
+          <span style="flex:1;text-align:right">${esc(short(x.home))}</span><b style="padding:0 10px">${x.home_score ?? "-"} x ${x.away_score ?? "-"}</b><span style="flex:1">${esc(short(x.away))}</span></div>`).join("");
+    }
+    body += `</div>`;
+  }
+  return head + body + credit;
+}
+
+function slipView() {
+  let html = `<div class="top"><div class="brand"><div class="logo">IA</div><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
+  if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites da IA</b> e adicione as seleções.</div>`;
+  else {
+    html += slip.map((s, i) => `<div class="slip-item">${crest(s.h, s.hl)}<div style="flex:1">
+      <div class="g">${esc(short(s.h))} x ${esc(short(s.a))} · ${esc(s.when)}</div><div class="m">${esc(s.mk)}</div>
+      <div class="g" style="color:var(--green);margin-top:3px">Confiança da IA: ${s.conf}%</div></div>
+      <button class="rm" onclick="slip.splice(${i},1);saveSlip();render()">✕</button></div>`).join("");
+    const avg = Math.round(slip.reduce((a, s) => a + s.conf, 0) / slip.length);
+    html += `<div class="total"><span>${slip.length} seleç${slip.length > 1 ? "ões" : "ão"}</span><span>Confiança média <b style="color:var(--green)">${avg}%</b></span></div>
+      <button class="gen" style="margin-top:14px" onclick="copySlip()">Copiar bilhete</button>`;
+  }
+  return html + `</div><p class="note">Quanto mais seleções, menor a chance de o bilhete inteiro bater.<br>+18 · Aposte com responsabilidade.</p>`;
+}
+function toggle(id, mk, conf) {
+  const i = slip.findIndex(s => s.id === id && s.mk === mk);
+  if (i >= 0) { slip.splice(i, 1); toast("Removido do bilhete"); }
+  else { const m = games[id]; slip.push({id, mk, conf, h: m.home, a: m.away, hl: m.home_logo, when: dayLabel() + " " + hhmm(m.time)}); toast("Adicionado ao bilhete ✓"); }
+  saveSlip(); render();
+}
+function copySlip() {
+  const txt = "🟢 BILHETE I.A DO GREEN\n\n" + slip.map(s => `⚽ ${short(s.h)} x ${short(s.a)} (${s.when})\n➡️ ${s.mk}`).join("\n\n") + "\n\n+18 | Aposte com responsabilidade";
+  navigator.clipboard.writeText(txt).then(() => toast("Bilhete copiado ✓"), () => toast("Não deu pra copiar aqui"));
+}
+
+let renderId = 0;
+async function render(keepFocus) {
+  const my = ++renderId;
+  const h = location.hash.slice(1);
+  $("#nav-jogos").classList.toggle("on", !h.startsWith("bilhete"));
+  $("#nav-bilhete").classList.toggle("on", h.startsWith("bilhete"));
+  let html;
+  if (h.startsWith("jogo-")) html = await detailView(h.slice(5));
+  else if (h === "bilhete") html = slipView();
+  else html = await homeView();
+  if (html == null || my !== renderId) return;
+  $("#app").innerHTML = html;
+  if (keepFocus) { const q = $("#q"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
+}
+window.addEventListener("hashchange", () => { tab = "seq"; render(); window.scrollTo(0, 0); });
+badge(); render();
+</script>
+</body>
+</html>
