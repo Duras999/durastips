@@ -33,6 +33,9 @@
         display:grid;place-items:center;font-weight:800;color:#04210f;font-size:15px;box-shadow:0 0 18px rgba(25,224,122,.35)}
   .home-btn{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left;-webkit-tap-highlight-color:transparent}
   .home-btn:active{opacity:.7}
+  .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin:0 0 12px}
+  .seg button{flex:1;padding:10px 0;border-radius:10px;font-weight:700;font-size:14px;color:var(--mut)}
+  .seg button.on{background:var(--green);color:#04210f}
   .brand h1{font-size:20px;font-weight:800;letter-spacing:-.3px}
   .brand h1 span{color:var(--green)}
   .search{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:11px 14px;color:var(--mut)}
@@ -222,10 +225,10 @@ function crest(name, logo, cls = "crest") {
 }
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._);t._=setTimeout(()=>t.classList.remove("show"),1600)}
 function go(h){location.hash=h}
-function goHome(){dayOff=0;filter="";tab="seq";if(location.hash.slice(1)){location.hash=""}else{render();window.scrollTo({top:0,behavior:"smooth"})}}
+function goHome(){dayOff=0;filter="";tab="seq";homeTab="jogos";if(location.hash.slice(1)){location.hash=""}else{render();window.scrollTo({top:0,behavior:"smooth"})}}
 
 /* ---------- estado ---------- */
-let dayOff = 0, filter = "", games = {}, tab = "seq";
+let dayOff = 0, filter = "", games = {}, tab = "seq", homeTab = "jogos";
 let slip = []; try { slip = JSON.parse(localStorage.getItem("iag-slip2") || "[]"); } catch (e) {}
 const saveSlip = () => { try { localStorage.setItem("iag-slip2", JSON.stringify(slip)); } catch (e) {} badge(); };
 function badge(){const b=$("#bdg");b.hidden=!slip.length;b.textContent=slip.length}
@@ -342,8 +345,13 @@ const credit = `<p class="note">Dados: <a href="https://sportscore.com/" rel="do
 
 let dayCache = {};
 async function homeView() {
-  const top = `<div class="top">
-    <button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>
+  const head = `<button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>
+    <div class="seg"><button class="${homeTab === "jogos" ? "on" : ""}" onclick="homeTab='jogos';render();window.scrollTo(0,0)">⚽ Jogos do dia</button><button class="${homeTab === "palpites" ? "on" : ""}" onclick="homeTab='palpites';render();window.scrollTo(0,0)">🔥 Palpites</button></div>`;
+  if (homeTab === "palpites") {
+    const r = readyView();
+    return `<div class="top">${head}</div>` + (r || `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Jogos do dia</b>.</div>`) + credit;
+  }
+  const top = `<div class="top">${head}
     <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <input id="q" placeholder="Pesquisar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
     <div class="day"><button onclick="dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="dayOff++;render()">›</button></div></div>`;
@@ -355,7 +363,7 @@ async function homeView() {
     if (key !== dayOff) return null;
   }
   const q = filter.toLowerCase();
-  let html = top + (dayOff === 0 && !filter ? readyView() : ""), any = false;
+  let html = top, any = false;
   for (const {L, ms} of dayCache[key]) {
     const list = ms.filter(m => !q || (m.home + m.away).toLowerCase().includes(q));
     if (!list.length) continue; any = true;
