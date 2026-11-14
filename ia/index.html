@@ -345,7 +345,7 @@ async function analyze(id) {
 /* ---------- telas ---------- */
 const dayLabel = () => dayOff === 0 ? "Hoje" : dayOff === 1 ? "Amanhã" : dayOff === -1 ? "Ontem" :
   new Date(Date.now() + dayOff * 86400000).toLocaleDateString("pt-BR", {timeZone: TZ, weekday: "short", day: "2-digit", month: "2-digit"});
-const credit = `<p class="note">+18 · Aposte com responsabilidade.</p>`;
+const credit = `<p class="note">+18 · Aposte com responsabilidade.<br><a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Sports data by SportScore" style="color:#5f6b77;font-size:11px;text-decoration:none">Powered by SportScore</a></p>`;
 
 let dayCache = {};
 async function homeView() {
