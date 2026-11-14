@@ -105,6 +105,15 @@
   .pos{display:inline-block;min-width:22px;padding-left:4px;border-left:3px solid transparent;text-align:left}
   .tteam{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--txt);line-height:1.2}
   .tteam img{width:18px;height:18px;object-fit:contain;flex:none}
+  .cr{display:grid;grid-template-columns:56px 1fr 56px;align-items:center;text-align:center;padding:10px 0;border-bottom:1px solid var(--line)}
+  .cr b{font-size:18px;font-weight:800}
+  .cr span{font-size:13px;color:#cfd6dd}
+  .cr.head{padding:0 0 6px}
+  .cr.head div{display:flex;justify-content:center}
+  .cexp{text-align:center;font-size:14px;color:#cfd6dd;margin-top:12px}
+  .cexp b{color:#f5c518;font-size:16px}
+  .cref{text-align:center;font-size:13px;color:var(--mut);margin-top:8px}
+  .cref b{color:#cfd6dd;font-weight:600}
   .wp{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;text-align:center;align-items:end}
   .wp>div{display:flex;flex-direction:column;align-items:center;gap:4px}
   .wp b{font-size:24px;font-weight:800}
@@ -315,7 +324,7 @@ async function teamForm(name) {
   const res = fin.map(m => {
     const home = m.home === (t.team?.name || name) || slugify(m.home) === slug;
     const gf = +(home ? m.home_score : m.away_score), ga = +(home ? m.away_score : m.home_score);
-    return {gf, ga, r: gf > ga ? "V" : gf === ga ? "E" : "D", opp: home ? m.away : m.home, home, date: m.time};
+    return {gf, ga, r: gf > ga ? "V" : gf === ga ? "E" : "D", opp: home ? m.away : m.home, home, date: m.time, url: m.url};
   });
   return {slug, res};
 }
@@ -379,17 +388,41 @@ function winProb(H, A) {
   const t = ph + pd + pa; let h = Math.round(ph / t * 100), a = Math.round(pa / t * 100);
   return {h, d: 100 - h - a, a};
 }
+async function cardStats(T) {
+  const games = await Promise.all(T.res.slice(0, 5).map(async x => {
+    const slug = (x.url || "").split("/").filter(Boolean)[2];
+    if (!slug) return null;
+    const key = "iagc:" + slug + "|" + x.date;
+    let c = null;
+    try { c = JSON.parse(localStorage.getItem(key) || "null"); } catch (e) {}
+    if (!c) {
+      const r = await fetch(`${API}/match/?sport=football&slug=${slug}`).catch(() => null);
+      const d = r && r.ok ? await r.json().catch(() => null) : null, mm = d && d.match;
+      if (!mm || mm.time !== x.date || !Array.isArray(mm.incidents) || !mm.incidents.length) return null;
+      c = mm.incidents.filter(i => i.is_card).map(i => ({side: i.side, type: i.type}));
+      try { localStorage.setItem(key, JSON.stringify(c)); } catch (e) {}
+    }
+    const side = x.home ? "home" : "away";
+    const mine = c.filter(i => i.side === side), opp = c.filter(i => i.side !== side);
+    return {y: mine.filter(i => /yellow/i.test(i.type)).length, r: mine.filter(i => /red/i.test(i.type)).length, tot: c.length, opp: opp.length};
+  }));
+  const g = games.filter(Boolean), n = g.length;
+  if (!n) return null;
+  const sum = k => g.reduce((a, x) => a + x[k], 0);
+  return {n, y: sum("y") / n, r: sum("r"), tot: sum("tot") / n, opp: sum("opp") / n};
+}
 const analysis = {};
 async function analyze(id) {
   if (analysis[id]) return analysis[id];
   const m = games[id];
   const [H, A] = await Promise.all([teamForm(m.home), teamForm(m.away)]);
   H.st = stats(H.res); A.st = stats(A.res);
-  const [h2h, table] = await Promise.all([
+  const [h2h, table, cH, cA] = await Promise.all([
     getJSON(`${API}/h2h/?team1=${H.slug}&team2=${A.slug}`, 720).catch(() => null),
-    m.lslug ? getJSON(`${API}/standings/?sport=football&competition=${m.lslug}`, 60).catch(() => null) : null]);
+    m.lslug ? getJSON(`${API}/standings/?sport=football&competition=${m.lslug}`, 60).catch(() => null) : null,
+    cardStats(H).catch(() => null), cardStats(A).catch(() => null)]);
   const seq = [...sequences(short(m.home), m.home_logo, H.st), ...sequences(short(m.away), m.away_logo, A.st)].sort((x, y) => y.k - x.k);
-  return analysis[id] = {H, A, h2h, table, seq, picks: picks(m, H, A)};
+  return analysis[id] = {H, A, h2h, table, cards: {h: cH, a: cA}, seq, picks: picks(m, H, A)};
 }
 
 /* ---------- telas ---------- */
@@ -464,6 +497,19 @@ async function detailView(id) {
       (A.seq.length ? A.seq.map(s => `<div class="row">${crest(s.team, s.logo, "crest mini")}<span class="lbl">${esc(s.lbl)}</span><span class="val">${s.val}</span></div>`).join("")
                     : `<div class="empty">Sem sequências marcantes nos últimos jogos.</div>`) +
       `<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Base: últimos ${A.H.res.length} jogos do ${esc(short(m.home))} e ${A.A.res.length} do ${esc(short(m.away))}.</p></div>
+      ${(() => { const c = A.cards || {}, h = c.h, a = c.a, f = v => v == null ? "-" : v.toFixed(1).replace(".", ",");
+        if (!h && !a) return "";
+        const row = (lbl, hv, av) => `<div class="cr"><b>${hv}</b><span>${lbl}</span><b>${av}</b></div>`;
+        const exp = h && a ? (h.y + a.y) : null;
+        return `<div class="box fade"><h3>Árbitro e cartões</h3>
+          <div class="cr head"><div>${crest(m.home, m.home_logo)}</div><span></span><div>${crest(m.away, m.away_logo)}</div></div>
+          ${row("Amarelos por jogo", f(h && h.y), f(a && a.y))}
+          ${row("Vermelhos", h ? `${h.r}` : "-", a ? `${a.r}` : "-")}
+          ${row("Cartões do adversário por jogo", f(h && h.opp), f(a && a.opp))}
+          ${row("Cartões no jogo (média)", f(h && h.tot), f(a && a.tot))}
+          ${exp != null ? `<div class="cexp">Média de amarelos dos dois times somados: <b>${f(exp)}</b> por jogo</div>` : ""}
+          <div class="cref">Árbitro: <b>${m.referee ? esc(m.referee) : "ainda não divulgado pela fonte de dados"}</b></div>
+          <p style="color:var(--mut);font-size:12px;text-align:center;margin-top:8px">Base: últimos ${h ? h.n : 0} jogos do ${esc(short(m.home))} e ${a ? a.n : 0} do ${esc(short(m.away))}.</p></div>`; })()}
       ${(() => { const w = winProb(A.H, A.A); return `<div class="box fade"><h3>Chance de vitória</h3>
         <div class="wp"><div>${crest(m.home, m.home_logo)}<b style="color:var(--green)">${w.h}%</b><span>${esc(short(m.home))}</span></div>
           <div><b style="color:#aab4be">${w.d}%</b><span>Empate</span></div>
