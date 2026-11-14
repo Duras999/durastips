@@ -1,14 +1,15 @@
 // Configuração do Firebase do Palpiteiro.
-// Cole aqui os dados do seu projeto (Console do Firebase > Configurações do projeto > Seus apps > Web).
 // Esses dados são públicos por natureza; quem protege os dados são as regras do Firestore.
 export const firebaseConfig = {
-  apiKey: "COLE_AQUI",
-  authDomain: "COLE_AQUI.firebaseapp.com",
-  projectId: "COLE_AQUI",
-  appId: "COLE_AQUI"
+  apiKey: "AIzaSyCqPLDG9aj92SE__wvQnNTQ4FvFizdnUZM",
+  authDomain: "palpiteiro-7b202.firebaseapp.com",
+  projectId: "palpiteiro-7b202",
+  storageBucket: "palpiteiro-7b202.firebasestorage.app",
+  messagingSenderId: "547352351575",
+  appId: "1:547352351575:web:b84e97bc55511ca2112412"
 };
 
 // E-mails dos 2 administradores (os mesmos que você colocar nas regras do Firestore).
-export const ADMINS = ["admin1@exemplo.com", "admin2@exemplo.com"];
+export const ADMINS = ["jorgeluizsilvasiqueira@gmail.com"];
 
 export const SDK = "https://www.gstatic.com/firebasejs/10.12.2";
