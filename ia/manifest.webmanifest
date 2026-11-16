@@ -1,13 +1,25 @@
 {
+  "id": "/ia/",
   "name": "Palpiteiro",
   "short_name": "Palpiteiro",
-  "start_url": "/ia/",
+  "description": "Jogos do dia, estatísticas, sequências e bilhetes prontos de futebol. +18",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/ia/?source=pwa",
   "scope": "/ia/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0b0e12",
   "theme_color": "#0b0e12",
+  "categories": ["sports"],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Jogos de hoje", "short_name": "Jogos", "url": "/ia/?source=atalho", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Meu bilhete", "short_name": "Bilhete", "url": "/ia/?source=atalho#bilhete", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
   ]
 }
