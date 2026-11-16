@@ -87,6 +87,39 @@
   .brand h1{font-size:20px;font-weight:800;letter-spacing:-.3px}
   .brand h1 span{color:var(--green)}
   .search{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:11px 14px;color:var(--mut)}
+  .sbar{display:flex;gap:8px;align-items:stretch}
+  .sbar .search{flex:1;min-width:0}
+  .sbar .search input{min-width:0}
+  .favbtn{flex:none;display:flex;align-items:center;gap:6px;padding:0 13px;border-radius:14px;background:var(--card);color:var(--txt);font-weight:700;font-size:13.5px;white-space:nowrap}
+  .favbtn svg{width:18px;height:18px;color:var(--yel)}
+  .favbtn.on svg{fill:var(--yel)}
+  .fstar{color:var(--yel);font-size:12px;margin-left:5px;vertical-align:1px}
+  .lbadge.favl{background:rgba(255,211,77,.14);color:var(--yel)}
+  .lbadge.favl svg{width:22px;height:22px;fill:var(--yel)}
+  .favnone{padding:4px 16px 14px;color:var(--mut);font-size:13.5px;line-height:1.45}
+  .favnone button{color:var(--green);font-weight:700;font-size:13.5px}
+  #fav{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center}
+  #fav[hidden]{display:none}
+  .fav-sheet{background:var(--bg);width:100%;max-width:520px;height:92%;border-radius:24px 24px 0 0;border:1px solid var(--line);border-bottom:0;display:flex;flex-direction:column;animation:f .25s ease}
+  @media(min-width:700px){#fav{align-items:center}.fav-sheet{border-radius:24px;border-bottom:1px solid var(--line);height:min(86vh,760px)}}
+  .fav-head{padding:20px 16px 12px}
+  .fav-head h2{font-size:21px;font-weight:800;margin-bottom:5px;letter-spacing:-.2px}
+  .fav-head p{color:var(--mut);font-size:14px;line-height:1.45;margin-bottom:14px}
+  .fav-body{flex:1;overflow-y:auto;padding:0 16px 18px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .fav-lg{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:var(--mut);margin:16px 2px 9px}
+  .fav-lg:first-child{margin-top:4px}
+  .fav-lg img{width:18px;height:18px;object-fit:contain}
+  .fav-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .fav-t{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 4px 11px;border-radius:16px;background:var(--card);border:1.5px solid transparent;font-size:12.5px;font-weight:600;line-height:1.2;min-width:0}
+  .fav-t span{overflow:hidden;text-overflow:ellipsis;max-width:100%;white-space:nowrap;padding:0 4px}
+  .fav-t .crest{width:36px;height:36px;font-size:11px}
+  .fav-t.on{border-color:var(--green);background:rgba(25,224,122,.09)}
+  .fav-t.on span{color:var(--green)}
+  .fav-t.on:after{content:"✓";position:absolute;top:6px;right:8px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#04210f;font-size:11px;font-weight:900;display:grid;place-items:center}
+  .fav-foot{display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+  .fav-skip{flex:none;padding:0 20px;border-radius:16px;background:var(--card);font-weight:700;color:var(--mut)}
+  .fav-foot .gen{margin-top:0;flex:1}
+  body.noscroll{overflow:hidden}
   .search input{flex:1;background:none;border:0;outline:0;color:var(--txt);font:inherit;font-size:16px}
   .chips{display:flex;gap:8px;margin-top:12px;overflow-x:auto;scrollbar-width:none}
   .chip{white-space:nowrap;padding:8px 14px;border-radius:99px;background:var(--card);font-weight:600;font-size:14px;color:var(--mut)}
@@ -346,6 +379,113 @@ const whenLabel = x => {
     d.toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "2-digit"});
   return lbl + " " + hhmm(x.t);
 };
+/* ---------- times favoritos ---------- */
+const FAVKEY = "pal-favs";
+let favs = null; try { favs = JSON.parse(localStorage.getItem(FAVKEY) || "null"); } catch (e) {}
+if (!Array.isArray(favs)) favs = null; // null = a pessoa ainda não passou pela escolha
+const STAR = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 16.9l-5.25 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>`;
+const tkey = n => slugify(short(n || ""));
+let favIdx = new Set();
+const favIndex = () => { favIdx = new Set((favs || []).flatMap(f => [f.slug, tkey(f.name)])); };
+favIndex();
+const isFav = name => !!name && (favIdx.has(slugify(name)) || favIdx.has(tkey(name)));
+const favGame = m => isFav(m.home) || isFav(m.away);
+
+let allTeams = null;
+async function loadTeams() {
+  if (allTeams) return allTeams;
+  const res = await Promise.all(LEAGUES.map(L =>
+    getJSON(`${API}/standings/?sport=football&competition=${L.slug}`, 1440).then(T => ({L, T})).catch(() => ({L, T: null}))));
+  const seen = new Set(), out = [];
+  for (const {L, T} of res) {
+    const teams = [];
+    for (const g of (T && T.tables) || []) for (const r of g.rows || []) {
+      const slug = r.team_slug || slugify(r.team || "");
+      if (!slug || !r.team || seen.has(slug)) continue;
+      seen.add(slug);
+      teams.push({slug, name: r.team, logo: r.team_logo || ""});
+    }
+    teams.sort((a, b) => short(a.name).localeCompare(short(b.name), "pt-BR"));
+    if (teams.length) out.push({L, teams});
+  }
+  if (!out.length) throw new Error("sem times");
+  return allTeams = out;
+}
+
+let favDraft = new Map(), favFirst = false;
+const teamChip = t => `<button class="fav-t ${favDraft.has(t.slug) ? "on" : ""}" data-slug="${esc(t.slug)}">${crest(t.name, t.logo)}<span>${esc(short(t.name))}</span></button>`;
+function favCount() {
+  const b = $("#fav-ok"); if (!b) return;
+  b.textContent = favDraft.size ? `Salvar ${favDraft.size} time${favDraft.size > 1 ? "s" : ""}` : (favFirst ? "Continuar" : "Salvar");
+}
+function drawFavs() {
+  const body = $("#fav-body"); if (!body || !allTeams) return;
+  const q = slugify(($("#fav-q") || {}).value || "");
+  let html = "";
+  for (const {L, teams} of allTeams) {
+    const list = q ? teams.filter(t => tkey(t.name).includes(q) || t.slug.includes(q)) : teams;
+    if (!list.length) continue;
+    html += `<div class="fav-lg">${esc(L.name)}</div><div class="fav-grid">${list.map(teamChip).join("")}</div>`;
+  }
+  body.innerHTML = html || `<div class="empty">Nenhum time encontrado com esse nome.</div>`;
+  favCount();
+}
+function closeFavs() {
+  const el = $("#fav"); if (el) { el.hidden = true; el.innerHTML = ""; }
+  document.body.classList.remove("noscroll");
+}
+async function openFavs(first) {
+  favFirst = !!first;
+  favDraft = new Map((favs || []).map(f => [f.slug, f]));
+  let el = $("#fav");
+  if (!el) { el = document.createElement("div"); el.id = "fav"; el.setAttribute("role", "dialog"); document.body.appendChild(el); }
+  el.hidden = false; document.body.classList.add("noscroll");
+  el.innerHTML = `<div class="fav-sheet"><div class="fav-head">
+      <h2>${favFirst ? "Quais times você acompanha?" : "Meus times"}</h2>
+      <p>${favFirst ? "Escolha seus times favoritos. Os jogos deles vão aparecer primeiro, no topo da lista." : "Toque nos times para marcar ou desmarcar."}</p>
+      <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="fav-q" placeholder="Buscar time" autocomplete="off"></div></div>
+    <div class="fav-body" id="fav-body"><div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Carregando times…</div></div>
+    <div class="fav-foot"><button class="fav-skip" id="fav-skip">${favFirst ? "Pular" : "Cancelar"}</button><button class="gen" id="fav-ok">Salvar</button></div></div>`;
+  favCount();
+  el.onclick = e => { if (e.target === el && !favFirst) closeFavs(); };
+  $("#fav-q").oninput = () => { drawFavs(); $("#fav-body").scrollTop = 0; };
+  $("#fav-body").onclick = e => {
+    const b = e.target.closest(".fav-t"); if (!b) return;
+    const slug = b.dataset.slug;
+    if (favDraft.has(slug)) favDraft.delete(slug);
+    else { const t = allTeams.flatMap(g => g.teams).find(x => x.slug === slug); if (t) favDraft.set(slug, t); }
+    b.classList.toggle("on", favDraft.has(slug));
+    favCount();
+  };
+  $("#fav-skip").onclick = () => {
+    if (favFirst && !favs) { favs = []; store(FAVKEY, "[]"); }
+    closeFavs();
+  };
+  $("#fav-ok").onclick = () => {
+    favs = [...favDraft.values()].map(t => ({slug: t.slug, name: t.name, logo: t.logo || ""}));
+    store(FAVKEY, JSON.stringify(favs)); favIndex();
+    closeFavs();
+    if (favs.length) toast(favs.length === 1 ? "Time salvo" : `${favs.length} times salvos`);
+    render(false, true);
+  };
+  try { await loadTeams(); }
+  catch (e) {
+    const body = $("#fav-body");
+    if (body) body.innerHTML = `<div class="empty">Não consegui carregar os times agora.<br><button class="retry" onclick="openFavs(${favFirst})">Tentar de novo</button></div>`;
+    return;
+  }
+  drawFavs();
+}
+// primeira vez no app: pergunta os times favoritos assim que a pessoa entra
+(function () {
+  if (favs !== null) return;
+  const t = setInterval(() => {
+    if (document.body.classList.contains("locked")) return;
+    clearInterval(t);
+    setTimeout(() => { if (favs === null && !document.body.classList.contains("locked")) openFavs(true); }, 600);
+  }, 700);
+})();
+
 const _ua = navigator.userAgent;
 const isStandalone = matchMedia("(display-mode: standalone)").matches || !!navigator.standalone;
 let canInstall = !isStandalone && (/iphone|ipad|ipod|android/i.test(_ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) || "onbeforeinstallprompt" in window);
@@ -508,6 +648,15 @@ const acct = () => window.palUser ? `<p class="acct">${esc(window.palUser.email 
 const credit = `<p class="note">+18 · Aposte com responsabilidade.<br><a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Sports data by SportScore" style="color:#5f6b77;font-size:11px;text-decoration:none">Powered by SportScore</a></p>`;
 
 let dayCache = {};
+function matchRow(m) {
+  const live = m.status === "live", fin = m.status === "finished";
+  const left = fin || live ? `<span style="color:${live ? "var(--red)" : "var(--mut)"}">${live ? "AO VIVO" : "Fim"}</span>` : hhmm(m.time);
+  const sc = (fin || live) ? `<div style="display:flex;flex-direction:column;gap:8px;font-weight:700;margin-right:6px">${m.home_score ?? "-"}<br>${m.away_score ?? "-"}</div>` : "";
+  const nm = n => esc(short(n)) + (isFav(n) ? `<span class="fstar">★</span>` : "");
+  return `<button class="match" onclick="go('jogo-${esc(mid(m))}')"><div class="time">${left}</div>
+    <div class="teams"><div class="team">${crest(m.home, m.home_logo)}${nm(m.home)}</div><div class="team">${crest(m.away, m.away_logo)}${nm(m.away)}</div></div>
+    ${sc}<span class="ia-tag">Palpiteiro</span></button>`;
+}
 const isHome = () => !location.hash.slice(1) && homeTab === "jogos";
 async function homeView() {
   const head = `<div class="brandrow"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>${canInstall ? `<button class="hinst" onclick="window.palInstall&&window.palInstall()">Instalar app</button>` : ""}</div>
@@ -517,8 +666,9 @@ async function homeView() {
     return `<div class="top">${head}</div>` + (r || `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`) + credit;
   }
   const top = `<div class="top">${head}
-    <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <input id="q" placeholder="Pesquisar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
+    <div class="sbar"><div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" placeholder="Buscar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
+      <button class="favbtn ${favs && favs.length ? "on" : ""}" onclick="openFavs(false)" aria-label="Meus times favoritos">${STAR}Meus times</button></div>
     <div class="ctrl"><button class="live ${liveOnly ? "on" : ""}" onclick="toggleLive()">Ao vivo <i></i></button>
     <div class="day"><button onclick="liveOnly=false;dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="liveOnly=false;dayOff++;render()">›</button></div></div></div>`;
   const off = dayOff, key = dayOf(off);
@@ -530,19 +680,23 @@ async function homeView() {
   } else refreshDay(off);
   const q = filter.trim().toLowerCase();
   let html = top, any = false;
+  if (favs && favs.length && !q) {
+    const mine = dayCache[key].d.flatMap(g => g.ms).filter(m => favGame(m) && (!liveOnly || m.status === "live"))
+      .sort((a, b) => a.time.localeCompare(b.time));
+    if (mine.length) {
+      any = true;
+      html += `<div class="league fade"><div class="lhead"><div class="lbadge favl">${STAR}</div>
+        <div><div class="lname">Meus times</div><div class="lsub">${mine.length} jogo${mine.length > 1 ? "s" : ""}</div></div></div>` + mine.map(matchRow).join("") + `</div>`;
+    } else if (!liveOnly) {
+      html += `<p class="favnone">Seus times não jogam ${dayOff === 0 ? "hoje" : "nesse dia"}. <button onclick="openFavs(false)">Mudar meus times</button></p>`;
+    }
+  }
   for (const {L, ms} of dayCache[key].d) {
     const list = ms.filter(m => (!q || (m.home + m.away).toLowerCase().includes(q)) && (!liveOnly || m.status === "live"));
     if (!list.length) continue; any = true;
     html += `<div class="league fade"><div class="lhead">${list[0].competition_logo ? `<div class="lbadge img"><img src="${esc(list[0].competition_logo)}" alt="" onerror="this.parentNode.classList.remove('img');this.parentNode.style.background='${L.c}';this.parentNode.style.color='${L.tc}';this.parentNode.textContent='${L.s}'"></div>` : `<div class="lbadge" style="background:${L.c};color:${L.tc}">${L.s}</div>`}
       <div><div class="lname">${L.name}</div><div class="lsub">${list.length} jogo${list.length > 1 ? "s" : ""}</div></div></div>`;
-    for (const m of list) {
-      const live = m.status === "live", fin = m.status === "finished";
-      const left = fin || live ? `<span style="color:${live ? "var(--red)" : "var(--mut)"}">${live ? "AO VIVO" : "Fim"}</span>` : hhmm(m.time);
-      const sc = (fin || live) ? `<div style="display:flex;flex-direction:column;gap:8px;font-weight:700;margin-right:6px">${m.home_score ?? "-"}<br>${m.away_score ?? "-"}</div>` : "";
-      html += `<button class="match" onclick="go('jogo-${esc(mid(m))}')"><div class="time">${left}</div>
-        <div class="teams"><div class="team">${crest(m.home, m.home_logo)}${esc(short(m.home))}</div><div class="team">${crest(m.away, m.away_logo)}${esc(short(m.away))}</div></div>
-        ${sc}<span class="ia-tag">Palpiteiro</span></button>`;
-    }
+    for (const m of list) html += matchRow(m);
     html += `</div>`;
   }
   if (!any) html += `<div class="empty">${liveOnly ? "Nenhum jogo ao vivo agora." : `Nenhum jogo ${q ? "encontrado" : "dos campeonatos principais"} nesse dia.`}</div>`;
@@ -792,7 +946,7 @@ if ("serviceWorker" in navigator) addEventListener("load", () => navigator.servi
   window.palCanInstall = () => canInstall;
   if (isStandalone || snoozed || !canInstall) return;
   // o convite aparece sozinho só depois que a pessoa entrou no app
-  const wait = setInterval(() => { if (!locked()) { clearInterval(wait); setTimeout(reveal, 2500); } }, 1000);
+  const wait = setInterval(() => { if (!locked()) { clearInterval(wait); setTimeout(function tryShow() { const f = $("#fav"); if (f && !f.hidden) return setTimeout(tryShow, 4000); reveal(); }, 2500); } }, 1000);
 })();
 function gateFail() {
   const g = document.getElementById("gate"); if (!g) return;
