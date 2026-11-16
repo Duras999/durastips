@@ -1,12 +1,12 @@
 // Service worker do Palpiteiro: deixa o app instalável, abre rápido
 // e mostra uma tela amigável quando o celular está sem internet.
 // Ao mudar arquivos do app, aumente a versão abaixo.
-const VERSION = "palpiteiro-v3";
+const VERSION = "palpiteiro-v4";
 const SHELL = [
   "./",
   "index.html",
   "offline.html",
-  "gate.js?v=3",
+  "gate.js?v=4",
   "firebase-config.js",
   "manifest.webmanifest",
   "icon-192.png?v=3",
@@ -15,13 +15,15 @@ const SHELL = [
 ];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION)
+    .then(c => Promise.all(SHELL.map(f => c.add(new Request(f, {cache: "reload"})).catch(() => {}))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => !k.startsWith(VERSION)).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => !k.startsWith(VERSION) && k !== "palpiteiro-sdk").map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -45,6 +47,16 @@ self.addEventListener("fetch", e => {
         const net = fetch(req).then(r => { if (r.ok) c.put(req, r.clone()); return r; }).catch(() => hit);
         return hit || net;
       })
+    );
+    return;
+  }
+
+  // Sistema de login (Firebase): os arquivos têm versão no endereço e nunca mudam, então guarda de vez.
+  if (url.hostname === "www.gstatic.com" && url.pathname.startsWith("/firebasejs/")) {
+    e.respondWith(
+      caches.open("palpiteiro-sdk").then(async c =>
+        (await c.match(req)) || fetch(req).then(r => { if (r.ok) c.put(req, r.clone()); return r; })
+      )
     );
     return;
   }

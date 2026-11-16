@@ -9,6 +9,10 @@ service cloud.firestore {
         && request.auth.token.email in ['jorgeluizsilvasiqueira@gmail.com'];
     }
     function isMe(uid) { return request.auth != null && request.auth.uid == uid; }
+    function isApproved() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved';
+    }
     // Campos que o próprio usuário pode mexer (uso do app e WhatsApp). Status só o admin muda.
     function onlyUsageFields() {
       return request.resource.data.diff(resource.data).affectedKeys()
@@ -17,15 +21,24 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow read: if isMe(uid) || isAdmin();
-      // Novo cadastro sempre entra como "pendente".
-      allow create: if isMe(uid) && request.resource.data.status == 'pending';
+      // Novo cadastro sempre entra como "pendente", só com os campos do cadastro.
+      allow create: if isMe(uid) && request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasOnly(['name', 'whatsapp', 'email', 'photo', 'provider', 'status',
+             'adult', 'createdAt', 'lastSeen', 'opens', 'games', 'bets', 'tickets']);
       allow update: if isAdmin() || (isMe(uid) && onlyUsageFields());
       allow delete: if isAdmin();
 
       match /days/{day} {
         allow read: if isMe(uid) || isAdmin();
         allow write: if isMe(uid) && get(/databases/$(database)/documents/users/$(uid)).data.status == 'approved';
+        allow delete: if isAdmin();
       }
+    }
+
+    // Bilhetes prontos do dia: o admin cadastra no painel, quem está aprovado só lê.
+    match /tickets/{id} {
+      allow read: if isAdmin() || isApproved();
+      allow write: if isAdmin();
     }
   }
 }

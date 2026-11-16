@@ -12,9 +12,11 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=3">
 <link rel="shortcut icon" href="icon-192.png?v=3">
-<link rel="manifest" href="manifest.webmanifest?v=4">
+<link rel="manifest" href="manifest.webmanifest?v=5">
 <meta name="description" content="Jogos do dia, estatísticas, sequências e bilhetes prontos de futebol. +18">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://sportscore.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
   :root{
     --bg:#0b0e12; --card:#161b21; --card2:#1d242c; --line:#252d36;
@@ -64,6 +66,20 @@
   .g-err{color:var(--red);font-size:14px;text-align:center}
   .g-link{text-align:center;color:var(--mut);font-size:14px}.g-link a{color:var(--green);font-weight:700;text-decoration:none}
   .g-load{display:flex;justify-content:center;padding:30px}
+  .g-ok{color:var(--green);font-size:14px;text-align:center}
+  .g-small{text-align:center;font-size:13px}.g-small a{color:var(--mut)}
+  .g-check{display:flex;align-items:flex-start;gap:10px;color:var(--mut);font-size:13px;line-height:1.4;text-align:left}
+  .g-check input{width:20px;height:20px;flex:none;padding:0;accent-color:var(--green)}
+  .g-warn{background:rgba(255,211,77,.1);border:1px solid rgba(255,211,77,.35);border-radius:14px;padding:12px;color:#e9d9a0;font-size:13.5px;line-height:1.45;text-align:center;display:flex;flex-direction:column;gap:10px}
+  .g-warn b{color:var(--yel)}
+  .g-warn a,.g-warn button{background:var(--yel);color:#111;font-weight:800;border-radius:12px;padding:11px;text-decoration:none;font-size:14px}
+  .brandrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .brandrow .brand{margin-bottom:0}
+  .hinst{flex:none;padding:8px 14px;border-radius:99px;background:rgba(25,224,122,.12);color:var(--green);font-weight:700;font-size:13px;border:1px solid rgba(25,224,122,.3)}
+  .retry{display:inline-block;margin-top:14px;padding:11px 22px;border-radius:12px;background:rgba(25,224,122,.12);color:var(--green);font-weight:700}
+  .quiet .fade{animation:none}
+  .acct{margin:0 16px 8px;color:#5f6b77;font-size:12px;text-align:center}
+  .acct button{color:var(--mut);font-size:12px;text-decoration:underline;padding:6px}
   .ptr{position:fixed;top:0;left:50%;transform:translate(-50%,-60px);z-index:30;width:42px;height:42px;border-radius:50%;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;color:var(--green);box-shadow:0 6px 18px rgba(0,0,0,.45);transition:transform .25s}
   .ptr svg{width:22px;height:22px}
   .ptr.spin svg{animation:spin .8s linear infinite}
@@ -211,7 +227,8 @@
   .ready-note a{color:var(--green)}
 </style>
 </head>
-<body>
+<body class="locked">
+<div id="gate"><div class="g-card"><div class="g-logo"><img src="icon-192.png?v=3" alt=""><h1>Palpi<span>teiro</span></h1></div><div class="g-load"><span class="dots"><i></i><i></i><i></i></span></div></div></div>
 <div class="wrap" id="app"></div>
 <nav class="nav">
   <button id="nav-jogos" class="on" onclick="go('')">
@@ -240,43 +257,55 @@ const TZ = "America/Sao_Paulo";
 /* ---------- bilhetes prontos (código de reserva da Bingo em Casa) ---------- */
 const CASA = "https://www.bingoemcasa17.com/pt-BR/sportsbook?btBookingCode=";
 const AFILIADO = "https://a.bingoem.casa/t/NTk2OTEwXzM=";
-const BILHETES = [
-  {data:"2026-11-14", tipo:"Seguro", odd:"3.22", codigo:"17059B1", sel:[
-    {jogo:"Mirassol x Atlético-MG", hora:"18:30", mercado:"Menos de 2.5 gols"},
-    {jogo:"Chapecoense x Vasco", hora:"20:30", mercado:"Mais de 2.5 gols"}]},
-  {data:"2026-11-14", tipo:"Equilibrado", odd:"3.54", codigo:"5B3DE94", sel:[
-    {jogo:"Chapecoense x Vasco", hora:"20:30", mercado:"Ambas marcam: Sim"},
-    {jogo:"Mirassol x Atlético-MG", hora:"18:30", mercado:"Mirassol ou empate"},
-    {jogo:"Sport x Goiás", hora:"16:30", mercado:"Goiás ou empate"}]},
-  {data:"2026-11-14", tipo:"Ousado", odd:"6.95", codigo:"C3CEF2C", sel:[
-    {jogo:"Sport x Goiás", hora:"16:30", mercado:"Goiás ou empate"},
-    {jogo:"Criciúma x Novorizontino", hora:"16:30", mercado:"Novorizontino ou empate"},
-    {jogo:"Mirassol x Atlético-MG", hora:"18:30", mercado:"Menos de 2.5 gols"},
-    {jogo:"Chapecoense x Vasco", hora:"20:30", mercado:"Mais de 2.5 gols"}]}
-];
+// Os bilhetes do dia são cadastrados no painel do administrador (aba Bilhetes).
 function readyView() {
   const today = new Date().toLocaleDateString("en-CA", {timeZone: TZ});
-  const list = BILHETES.filter(b => b.data === today);
+  const list = (window.palTickets || []).filter(b => b && b.date === today && Array.isArray(b.sel) && b.sel.length);
   if (!list.length) return "";
   return `<div class="ready-wrap"><div class="ready-title">Bilhetes prontos do Palpiteiro</div>` +
-    list.map(b => `<div class="ready fade"><div class="ready-head"><span class="ready-tag">${b.tipo}</span><span class="ready-odd">Odd ${b.odd}</span></div>` +
-      b.sel.map(s => `<div class="ready-sel"><div class="g">${s.jogo} · ${s.hora}</div><div class="m">${s.mercado}</div></div>`).join("") +
-      `<a class="gen ready-btn" href="${CASA}${b.codigo}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets')">Apostar</a></div>`).join("") +
+    list.map(b => `<div class="ready fade"><div class="ready-head"><span class="ready-tag">${esc(b.tipo || "Bilhete")}</span>${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
+      b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</div><div class="m">${esc(x.mercado)}</div></div>`).join("") +
+      `<a class="gen ready-btn" href="${b.codigo ? CASA + encodeURIComponent(b.codigo) : AFILIADO}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets')">Apostar</a></div>`).join("") +
     `<p class="ready-note">O botão abre a Bingo em Casa com o bilhete já montado. As odds podem mudar até o jogo.<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
 }
 
 /* ---------- cache simples ---------- */
 const mem = {};
+function pruneStore(all) {
+  try {
+    const now = Date.now(), ks = Object.keys(localStorage);
+    for (const k of ks) {
+      if (!k.startsWith("iag:")) continue;
+      let t = 0; try { t = JSON.parse(localStorage.getItem(k)).t || 0; } catch (e) {}
+      if (all || now - t > 36 * 3600000) localStorage.removeItem(k);
+    }
+    const cards = ks.filter(k => k.startsWith("iagc:"));
+    if (all || cards.length > 250) cards.forEach(k => localStorage.removeItem(k));
+  } catch (e) {}
+}
+pruneStore(false);
+function store(k, v) {
+  try { localStorage.setItem(k, v); }
+  catch (e) { pruneStore(true); try { localStorage.setItem(k, v); } catch (e2) {} }
+}
 async function getJSON(url, ttlMin) {
   const now = Date.now();
   if (mem[url] && now - mem[url].t < ttlMin * 60000) return mem[url].d;
   try { const c = JSON.parse(localStorage.getItem("iag:" + url) || "null");
         if (c && now - c.t < ttlMin * 60000) { mem[url] = c; return c.d; } } catch (e) {}
-  const r = await fetch(url);
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  const d = await r.json();
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
+  let d;
+  try {
+    const r = await fetch(url, {signal: ctl.signal});
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    d = await r.json();
+  } catch (e) {
+    // sem resposta agora: melhor mostrar o último dado guardado do que nada
+    if (mem[url]) return mem[url].d;
+    throw e;
+  } finally { clearTimeout(timer); }
   mem[url] = {t: now, d};
-  try { localStorage.setItem("iag:" + url, JSON.stringify(mem[url])); } catch (e) {}
+  store("iag:" + url, JSON.stringify(mem[url]));
   return d;
 }
 
@@ -294,40 +323,56 @@ const localDay = d => d.toLocaleDateString("en-CA", {timeZone: TZ});
 const mid = m => (m.url || "").split("/").filter(Boolean).pop();
 function crest(name, logo, cls = "crest") {
   const ini = esc(short(name).slice(0, 3).toUpperCase());
-  return logo ? `<span class="${cls} img"><img src="${esc(logo)}" alt="" onerror="this.parentNode.textContent='${ini}'"></span>`
+  return logo ? `<span class="${cls} img"><img src="${esc(logo)}" alt="" data-ini="${ini}" onerror="crestFail(this)"></span>`
               : `<span class="${cls}">${ini}</span>`;
 }
+function crestFail(el){const p=el.parentNode;if(!p)return;p.classList.remove("img");p.textContent=el.dataset.ini||""}
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._);t._=setTimeout(()=>t.classList.remove("show"),1600)}
 function go(h){location.hash=h}
-function toggleLive(){liveOnly=!liveOnly;if(liveOnly){dayOff=0;delete dayCache[0];for(const k in mem)if(k.includes("/fixtures/"))delete mem[k];try{Object.keys(localStorage).filter(k=>k.startsWith("iag:")&&k.includes("/fixtures/")).forEach(k=>localStorage.removeItem(k))}catch(e){}}render()}
+function toggleLive(){liveOnly=!liveOnly;if(liveOnly){dayOff=0;dayCache={};for(const k in mem)if(k.includes("/fixtures/"))delete mem[k];try{Object.keys(localStorage).filter(k=>k.startsWith("iag:")&&k.includes("/fixtures/")).forEach(k=>localStorage.removeItem(k))}catch(e){}}render()}
 function goHome(){dayOff=0;filter="";tab="seq";homeTab="jogos";liveOnly=false;if(location.hash.slice(1)){location.hash=""}else{render();window.scrollTo({top:0,behavior:"smooth"})}}
 
 /* ---------- estado ---------- */
 let dayOff = 0, filter = "", games = {}, tab = "seq", homeTab = "jogos", liveOnly = false;
 let slip = []; try { slip = JSON.parse(localStorage.getItem("iag-slip2") || "[]"); } catch (e) {}
-const saveSlip = () => { try { localStorage.setItem("iag-slip2", JSON.stringify(slip)); } catch (e) {} badge(); };
+if (!Array.isArray(slip)) slip = [];
+// tira do bilhete os jogos que já acabaram faz tempo
+slip = slip.filter(x => x && x.id && x.mk && !(x.t && Date.now() - new Date(x.t).getTime() > 12 * 3600000));
+const saveSlip = () => { store("iag-slip2", JSON.stringify(slip)); badge(); };
+const whenLabel = x => {
+  if (!x.t) return x.when || "";
+  const d = new Date(x.t), day = localDay(d), now = Date.now();
+  const lbl = day === localDay(new Date(now)) ? "Hoje" : day === localDay(new Date(now + 86400000)) ? "Amanhã" :
+    d.toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "2-digit"});
+  return lbl + " " + hhmm(x.t);
+};
+const _ua = navigator.userAgent;
+const isStandalone = matchMedia("(display-mode: standalone)").matches || !!navigator.standalone;
+let canInstall = !isStandalone && (/iphone|ipad|ipod|android/i.test(_ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) || "onbeforeinstallprompt" in window);
 function badge(){const b=$("#bdg");b.hidden=!slip.length;b.textContent=slip.length}
 
 /* ---------- jogos do dia ---------- */
-async function loadDay() {
-  const target = new Date(Date.now() + dayOff * 86400000);
-  const day = localDay(target);
-  // jogos noturnos no Brasil caem no dia seguinte em UTC: buscamos os dois dias
-  const d2 = new Date(target.getTime() + 86400000).toISOString().slice(0, 10);
-  const d1 = target.toISOString().slice(0, 10);
-  const days = [...new Set([d1, d2])];
+const dayOf = off => localDay(new Date(Date.now() + off * 86400000));
+async function loadDay(off, fresh) {
+  const day = dayOf(off);
+  // o dia no Brasil pega um pedaço do dia seguinte no horário mundial: buscamos os dois
+  const next = new Date(new Date(day + "T12:00:00Z").getTime() + 86400000).toISOString().slice(0, 10);
+  const days = [day, next];
+  const ttl = fresh ? 0 : off === 0 ? 1 : 10;
   const out = [];
+  let fails = 0;
   await Promise.all(LEAGUES.map(async L => {
     const lists = await Promise.all(days.map(d =>
-      getJSON(`${API}/fixtures/?sport=football&date=${d}&competition=${L.slug}&limit=100`, 10).catch(() => ({matches: []}))));
+      getJSON(`${API}/fixtures/?sport=football&date=${d}&competition=${L.slug}&limit=100`, ttl).catch(() => { fails++; return {matches: []}; })));
     const seen = new Set();
     const ms = lists.flatMap(x => x.matches || []).filter(m => {
-      const id = mid(m); if (seen.has(id)) return false; seen.add(id);
+      const id = mid(m); if (!id || !m.time || seen.has(id)) return false; seen.add(id);
       return localDay(new Date(m.time)) === day;
     }).sort((a, b) => a.time.localeCompare(b.time));
     ms.forEach(m => { m.lname = L.name; m.lslug = L.slug; games[mid(m)] = m; });
     if (ms.length) out.push({L, ms});
   }));
+  if (fails === LEAGUES.length * days.length) throw new Error("sem dados");
   return LEAGUES.map(L => out.find(o => o.L === L)).filter(Boolean);
 }
 
@@ -421,7 +466,7 @@ async function cardStats(T) {
       const d = r && r.ok ? await r.json().catch(() => null) : null, mm = d && d.match;
       if (!mm || mm.time !== x.date || !Array.isArray(mm.incidents) || !mm.incidents.length) return null;
       c = mm.incidents.filter(i => i.is_card).map(i => ({side: i.side, type: i.type}));
-      try { localStorage.setItem(key, JSON.stringify(c)); } catch (e) {}
+      store(key, JSON.stringify(c));
     }
     const side = x.home ? "home" : "away";
     const mine = c.filter(i => i.side === side), opp = c.filter(i => i.side !== side);
@@ -444,22 +489,28 @@ async function analyze(id) {
   const m = games[id];
   const [H, A] = await Promise.all([teamForm(m.home), teamForm(m.away)]);
   H.st = stats(H.res); A.st = stats(A.res);
-  const [h2h, table, cH, cA] = await Promise.all([
+  const [h2h, table] = await Promise.all([
     getJSON(`${API}/h2h/?team1=${H.slug}&team2=${A.slug}`, 720).catch(() => null),
-    m.lslug ? getJSON(`${API}/standings/?sport=football&competition=${m.lslug}`, 60).catch(() => null) : null,
-    cardStats(H).catch(() => null), cardStats(A).catch(() => null)]);
+    m.lslug ? getJSON(`${API}/standings/?sport=football&competition=${m.lslug}`, 60).catch(() => null) : null]);
   const seq = [...sequences(short(m.home), m.home_logo, H.st), ...sequences(short(m.away), m.away_logo, A.st)].sort((x, y) => y.k - x.k);
-  return analysis[id] = {H, A, h2h, table, cards: {h: cH, a: cA}, seq, picks: picks(m, H, A)};
+  const R = analysis[id] = {H, A, h2h, table, cards: null, cardsBusy: true, seq, picks: picks(m, H, A)};
+  Promise.all([cardStats(H).catch(() => null), cardStats(A).catch(() => null)]).then(([h, a]) => {
+    R.cards = {h, a}; R.cardsBusy = false;
+    if (location.hash.slice(1) === "jogo-" + id && tab === "seq") render(false, true);
+  });
+  return R;
 }
 
 /* ---------- telas ---------- */
 const dayLabel = () => dayOff === 0 ? "Hoje" : dayOff === 1 ? "Amanhã" : dayOff === -1 ? "Ontem" :
   new Date(Date.now() + dayOff * 86400000).toLocaleDateString("pt-BR", {timeZone: TZ, weekday: "short", day: "2-digit", month: "2-digit"});
+const acct = () => window.palUser ? `<p class="acct">${esc(window.palUser.email || "")}<button onclick="window.palSignOut&&window.palSignOut()">Sair da conta</button></p>` : "";
 const credit = `<p class="note">+18 · Aposte com responsabilidade.<br><a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Sports data by SportScore" style="color:#5f6b77;font-size:11px;text-decoration:none">Powered by SportScore</a></p>`;
 
 let dayCache = {};
+const isHome = () => !location.hash.slice(1) && homeTab === "jogos";
 async function homeView() {
-  const head = `<button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>
+  const head = `<div class="brandrow"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>${canInstall ? `<button class="hinst" onclick="window.palInstall&&window.palInstall()">Instalar app</button>` : ""}</div>
     <div class="seg"><button class="${homeTab === "jogos" ? "on" : ""}" onclick="homeTab='jogos';render();window.scrollTo(0,0)">Partidas</button><button class="${homeTab === "palpites" ? "on" : ""}" onclick="homeTab='palpites';render();window.scrollTo(0,0)">Palpites</button></div>`;
   if (homeTab === "palpites") {
     const r = readyView();
@@ -470,16 +521,16 @@ async function homeView() {
       <input id="q" placeholder="Pesquisar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
     <div class="ctrl"><button class="live ${liveOnly ? "on" : ""}" onclick="toggleLive()">Ao vivo <i></i></button>
     <div class="day"><button onclick="liveOnly=false;dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="liveOnly=false;dayOff++;render()">›</button></div></div></div>`;
-  const key = dayOff;
+  const off = dayOff, key = dayOf(off);
   if (!dayCache[key]) {
     $("#app").innerHTML = top + `<div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Buscando jogos…</div>`;
-    try { dayCache[key] = await loadDay(); }
-    catch (e) { return top + `<div class="empty">Não consegui carregar os jogos. Confere a internet e tenta de novo.</div>`; }
-    if (key !== dayOff) return null;
-  }
-  const q = filter.toLowerCase();
+    try { dayCache[key] = {t: Date.now(), d: await loadDay(off)}; }
+    catch (e) { return top + `<div class="empty">Não consegui carregar os jogos. Confere a internet e tenta de novo.<br><button class="retry" onclick="render()">Tentar de novo</button></div>`; }
+    if (off !== dayOff) return null;
+  } else refreshDay(off);
+  const q = filter.trim().toLowerCase();
   let html = top, any = false;
-  for (const {L, ms} of dayCache[key]) {
+  for (const {L, ms} of dayCache[key].d) {
     const list = ms.filter(m => (!q || (m.home + m.away).toLowerCase().includes(q)) && (!liveOnly || m.status === "live"));
     if (!list.length) continue; any = true;
     html += `<div class="league fade"><div class="lhead">${list[0].competition_logo ? `<div class="lbadge img"><img src="${esc(list[0].competition_logo)}" alt="" onerror="this.parentNode.classList.remove('img');this.parentNode.style.background='${L.c}';this.parentNode.style.color='${L.tc}';this.parentNode.textContent='${L.s}'"></div>` : `<div class="lbadge" style="background:${L.c};color:${L.tc}">${L.s}</div>`}
@@ -488,7 +539,7 @@ async function homeView() {
       const live = m.status === "live", fin = m.status === "finished";
       const left = fin || live ? `<span style="color:${live ? "var(--red)" : "var(--mut)"}">${live ? "AO VIVO" : "Fim"}</span>` : hhmm(m.time);
       const sc = (fin || live) ? `<div style="display:flex;flex-direction:column;gap:8px;font-weight:700;margin-right:6px">${m.home_score ?? "-"}<br>${m.away_score ?? "-"}</div>` : "";
-      html += `<button class="match" onclick="go('jogo-${mid(m)}')"><div class="time">${left}</div>
+      html += `<button class="match" onclick="go('jogo-${esc(mid(m))}')"><div class="time">${left}</div>
         <div class="teams"><div class="team">${crest(m.home, m.home_logo)}${esc(short(m.home))}</div><div class="team">${crest(m.away, m.away_logo)}${esc(short(m.away))}</div></div>
         ${sc}<span class="ia-tag">Palpiteiro</span></button>`;
     }
@@ -498,14 +549,47 @@ async function homeView() {
   return html + credit;
 }
 
+// Atualiza os jogos por trás, sem piscar a tela (placar ao vivo, virada do dia).
+function refreshDay(off, force) {
+  const key = dayOf(off), c = dayCache[key];
+  if (!c || c.busy) return;
+  const age = Date.now() - c.t, hasLive = c.d.some(g => g.ms.some(m => m.status === "live"));
+  const soon = c.d.some(g => g.ms.some(m => m.status === "upcoming" && new Date(m.time).getTime() - Date.now() < 10 * 60000));
+  const max = off !== 0 ? 10 * 60000 : (hasLive || soon) ? 60000 : 4 * 60000;
+  if (!force && age < max) return;
+  c.busy = true;
+  loadDay(off, true).then(d => {
+    dayCache[key] = {t: Date.now(), d};
+    const h = location.hash.slice(1);
+    if ((isHome() && dayOf(dayOff) === key) || h.startsWith("jogo-")) render(document.activeElement && document.activeElement.id === "q", true);
+  }).catch(() => { c.busy = false; c.t = Date.now() - max + 30000; });
+}
+setInterval(() => {
+  if (document.hidden || document.body.classList.contains("locked")) return;
+  const h = location.hash.slice(1);
+  if (isHome()) { dayCache[dayOf(dayOff)] ? refreshDay(dayOff) : render(); }
+  else if (h.startsWith("jogo-") && games[h.slice(5)] && games[h.slice(5)].status !== "finished") refreshDay(0);
+}, 30000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && isHome() && !document.body.classList.contains("locked")) render(false, true); });
+
 async function detailView(id) {
-  if (window.track && window._lastTracked !== id) { window._lastTracked = id; window.track("games"); }
+  if (!games[id]) {
+    // abriu direto no jogo (link ou atualização da página): busca os jogos antes de desistir
+    $("#app").innerHTML = `<div class="box"><div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Abrindo o jogo…</div></div>`;
+    for (const off of [...new Set([dayOff, 0, 1, -1])]) {
+      if (games[id]) break;
+      const key = dayOf(off);
+      if (!dayCache[key]) { try { dayCache[key] = {t: Date.now(), d: await loadDay(off)}; } catch (e) {} }
+    }
+    if (location.hash.slice(1) !== "jogo-" + id) return null;
+  }
   const m = games[id];
   if (!m) { go(""); return null; }
+  if (window._lastTracked !== id && window.palUser) { window._lastTracked = id; window.track("games"); }
   const head = `<div class="hero fade">
     <div class="hbar"><button onclick="go('')">←</button><span style="font-size:15px;color:#cfd6dd">${esc(m.lname || m.competition)}</span><span></span></div>
     <div class="score"><div>${crest(m.home, m.home_logo, "bigcrest")}<div class="tname">${esc(short(m.home))}</div></div>
-      <div class="kick"><small>${m.status === "upcoming" ? dayLabel() : esc(m.status_text)}</small>${m.status === "upcoming" ? hhmm(m.time) : `${m.home_score ?? "-"} - ${m.away_score ?? "-"}`}</div>
+      <div class="kick"><small>${m.status === "upcoming" ? esc(whenLabel({t: m.time}).split(" ")[0]) : esc(m.status_text || "")}</small>${m.status === "upcoming" ? hhmm(m.time) : `${m.home_score ?? "-"} - ${m.away_score ?? "-"}`}</div>
       <div>${crest(m.away, m.away_logo, "bigcrest")}<div class="tname">${esc(short(m.away))}</div></div></div>
     <div class="tabs">
       <button class="tab ${tab === "seq" ? "on" : ""}" onclick="tab='seq';render()">Sequências</button>
@@ -515,7 +599,7 @@ async function detailView(id) {
     </div></div>`;
   if (!analysis[id]) {
     $("#app").innerHTML = head + `<div class="box"><div class="thinking"><span class="dots"><i></i><i></i><i></i></span> Palpiteiro analisando os últimos jogos…</div></div>`;
-    try { await analyze(id); } catch (e) { return head + `<div class="box"><div class="empty">Não consegui buscar os dados desse jogo agora.</div></div>`; }
+    try { await analyze(id); } catch (e) { return head + `<div class="box"><div class="empty">Não consegui buscar os dados desse jogo agora.<br><button class="retry" onclick="render()">Tentar de novo</button></div></div>`; }
     if (location.hash.slice(1) !== "jogo-" + id) return null;
   }
   const A = analysis[id];
@@ -526,7 +610,7 @@ async function detailView(id) {
                     : `<div class="empty">Sem sequências marcantes nos últimos jogos.</div>`) +
       `<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Base: últimos ${A.H.res.length} jogos do ${esc(short(m.home))} e ${A.A.res.length} do ${esc(short(m.away))}.</p></div>
       ${(() => { const c = A.cards || {}, h = c.h, a = c.a, f = v => v == null ? "-" : v.toFixed(1).replace(".", ",");
-        if (!h && !a) return "";
+        if (!h && !a) return A.cardsBusy ? `<div class="box fade"><h3>Árbitro e cartões</h3><div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Contando os cartões…</div></div>` : "";
         const row = (lbl, hv, av) => `<div class="cr"><b>${hv}</b><span>${lbl}</span><b>${av}</b></div>`;
         const exp = h && a ? (h.y + a.y) : null;
         return `<div class="box fade"><h3>Árbitro e cartões</h3>
@@ -552,7 +636,7 @@ async function detailView(id) {
       const inSlip = slip.some(s => s.id === id && s.mk === p.mk);
       body += `<div class="pick fade"><div class="mk">${esc(p.mk)}</div><div class="why">${esc(p.why)}</div>
         <div class="conf"><div class="bar"><i style="width:${p.conf}%"></i></div><span class="pct">${p.conf}%</span></div>
-        <button class="add ${inSlip ? "in" : ""}" onclick='toggle(${JSON.stringify(id)},${JSON.stringify(p.mk)},${p.conf})'>${inSlip ? "No bilhete" : "+ Adicionar ao bilhete"}</button></div>`;
+        <button class="add ${inSlip ? "in" : ""}" data-id="${esc(id)}" data-mk="${esc(p.mk)}" data-conf="${p.conf}" onclick="toggle(this.dataset.id,this.dataset.mk,+this.dataset.conf)">${inSlip ? "No bilhete" : "+ Adicionar ao bilhete"}</button></div>`;
     }
     body += `<p style="color:var(--mut);font-size:12px;margin-top:12px;text-align:center">A confiança vem só dos últimos resultados. Não considera desfalques. Não é garantia de resultado.</p></div>`;
   } else if (tab === "tab") {
@@ -587,41 +671,48 @@ function slipView() {
   if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites do Palpiteiro</b> e adicione as seleções.</div>`;
   else {
     html += slip.map((s, i) => `<div class="slip-item">${crest(s.h, s.hl)}<div style="flex:1">
-      <div class="g">${esc(short(s.h))} x ${esc(short(s.a))} · ${esc(s.when)}</div><div class="m">${esc(s.mk)}</div>
+      <div class="g">${esc(short(s.h))} x ${esc(short(s.a))} · ${esc(whenLabel(s))}</div><div class="m">${esc(s.mk)}</div>
       <div class="g" style="color:var(--green);margin-top:3px">Confiança do Palpiteiro: ${s.conf}%</div></div>
       <button class="rm" onclick="slip.splice(${i},1);saveSlip();render()">✕</button></div>`).join("");
     const avg = Math.round(slip.reduce((a, s) => a + s.conf, 0) / slip.length);
     html += `<div class="total"><span>${slip.length} seleç${slip.length > 1 ? "ões" : "ão"}</span><span>Confiança média <b style="color:var(--green)">${avg}%</b></span></div>
       <a class="gen" style="margin-top:14px;display:block;text-align:center;text-decoration:none" href="https://a.bingoem.casa/t/NTk2OTEwXzM=" target="_blank" rel="noopener" onclick="copySlip(true);window.track&&window.track('bets')">Apostar</a>`;
   }
-  return html + `</div><p class="note">Quanto mais seleções, menor a chance de o bilhete inteiro bater.<br>+18 · Aposte com responsabilidade.</p>`;
+  return html + `</div><p class="note">Quanto mais seleções, menor a chance de o bilhete inteiro bater.<br>+18 · Aposte com responsabilidade.</p>` + acct();
 }
 function toggle(id, mk, conf) {
   const i = slip.findIndex(s => s.id === id && s.mk === mk);
   if (i >= 0) { slip.splice(i, 1); toast("Removido do bilhete"); }
-  else { const m = games[id]; slip.push({id, mk, conf, h: m.home, a: m.away, hl: m.home_logo, when: dayLabel() + " " + hhmm(m.time)}); toast("Adicionado ao bilhete"); window.track && window.track("tickets"); }
+  else { const m = games[id]; if (!m) return; slip.push({id, mk, conf, h: m.home, a: m.away, hl: m.home_logo, t: m.time}); toast("Adicionado ao bilhete"); window.track && window.track("tickets"); }
   saveSlip(); render();
 }
 function copySlip(silent) {
-  const txt = "BILHETE PALPITEIRO\n\n" + slip.map(s => `${short(s.h)} x ${short(s.a)} (${s.when})\n${s.mk}`).join("\n\n") + "\n\n+18 | Aposte com responsabilidade";
+  const txt = "BILHETE PALPITEIRO\n\n" + slip.map(s => `${short(s.h)} x ${short(s.a)} (${whenLabel(s)})\n${s.mk}`).join("\n\n") + "\n\n+18 | Aposte com responsabilidade";
   try { navigator.clipboard.writeText(txt).then(() => toast("Bilhete copiado"), () => { if (!silent) toast("Não deu pra copiar aqui"); }); } catch (e) {}
 }
 
 let renderId = 0;
-async function render(keepFocus) {
+async function render(keepFocus, quiet) {
   const my = ++renderId;
+  document.body.classList.toggle("quiet", !!quiet);
   const h = location.hash.slice(1);
   $("#nav-jogos").classList.toggle("on", !h.startsWith("bilhete"));
   $("#nav-bilhete").classList.toggle("on", h.startsWith("bilhete"));
   let html;
-  if (h.startsWith("jogo-")) html = await detailView(h.slice(5));
-  else if (h === "bilhete") html = slipView();
-  else html = await homeView();
+  try {
+    if (h.startsWith("jogo-")) html = await detailView(decodeURIComponent(h.slice(5)));
+    else if (h === "bilhete") html = slipView();
+    else html = await homeView();
+  } catch (e) {
+    console.error("Palpiteiro render", e);
+    html = `<div class="box"><div class="empty">Deu um erro ao montar a tela.<br><button class="retry" onclick="location.hash='';render()">Voltar ao início</button></div></div>`;
+  }
   if (html == null || my !== renderId) return;
   $("#app").innerHTML = html;
   if (keepFocus) { const q = $("#q"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
 }
 window.addEventListener("hashchange", () => { tab = "seq"; render(); window.scrollTo(0, 0); });
+window.palRender = () => { if (!location.hash.slice(1) && homeTab === "palpites") render(false, true); };
 /* ---------- sem zoom no celular ---------- */
 ["gesturestart", "gesturechange", "gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive: false}));
 document.addEventListener("touchmove", e => { if (e.touches.length > 1) e.preventDefault(); }, {passive: false});
@@ -651,14 +742,14 @@ badge(); render();
 <style>
   .inst{position:fixed;left:50%;transform:translateX(-50%) translateY(140%);bottom:calc(92px + env(safe-area-inset-bottom));width:min(92%,480px);
         z-index:15;background:#161b21;border:1px solid #2c3540;border-radius:20px;padding:12px 12px 12px 14px;display:flex;align-items:center;gap:12px;
-        box-shadow:0 12px 32px rgba(0,0,0,.5);transition:transform .35s ease}
-  .inst.show{transform:translateX(-50%) translateY(0)}
+        box-shadow:0 12px 32px rgba(0,0,0,.5);transition:transform .35s ease,opacity .35s ease,visibility .35s;visibility:hidden;opacity:0}
+  .inst.show{transform:translateX(-50%) translateY(0);visibility:visible;opacity:1}
   .inst img{width:44px;height:44px;border-radius:12px;flex:none}
   .inst .t{flex:1;font-size:13px;color:var(--mut);line-height:1.35}
   .inst .t b{display:block;color:var(--txt);font-size:15px;margin-bottom:2px}
   .inst .ok{background:linear-gradient(135deg,var(--green),var(--green2));color:#04210f;font-weight:800;border-radius:12px;padding:10px 14px;font-size:14px}
   .inst .x{color:var(--mut);font-size:18px;padding:4px 6px}
-  body.locked .inst{display:none}
+  .inst{z-index:120}
 </style>
 <div class="inst" id="inst" role="dialog" aria-label="Instalar o Palpiteiro">
   <img src="icon-192.png?v=3" alt="">
@@ -671,32 +762,47 @@ badge(); render();
 if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 (function(){
   const box = $("#inst"), KEY = "pal-inst-off";
-  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
   let snoozed = false; try { snoozed = Date.now() < +(localStorage.getItem(KEY) || 0); } catch (e) {}
-  if (standalone || snoozed) return;
   const ua = navigator.userAgent;
   const ios = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const inApp = /instagram|fban|fbav|tiktok|musical_ly|bytedance|whatsapp|line\//i.test(ua);
+  const inApp = /instagram|fban|fbav|fb_iab|tiktok|musical_ly|bytedance|line\//i.test(ua);
   const mobile = ios || /android/i.test(ua);
   let prompt = null;
-  const place = () => { const n = document.querySelector(".nav"); if (n) box.style.bottom = (innerHeight - n.getBoundingClientRect().top + 10) + "px"; };
+  const locked = () => document.body.classList.contains("locked");
+  const place = () => { const n = document.querySelector(".nav"); box.style.bottom = (n && !locked()) ? (innerHeight - n.getBoundingClientRect().top + 10) + "px" : ""; };
   addEventListener("resize", place);
-  const show = () => setTimeout(() => { place(); box.classList.add("show"); }, 2500);
+  const reveal = () => { place(); box.classList.add("show"); };
   const hide = days => { box.classList.remove("show"); try { localStorage.setItem(KEY, Date.now() + days * 86400000); } catch (e) {} };
   const B = t => `<b style="display:inline;font-size:13px">${t}</b>`;
-  const help = html => { $("#inst-t").innerHTML = html; $("#inst-ok").hidden = true; place(); };
+  const help = html => { $("#inst-t").innerHTML = html; $("#inst-ok").hidden = true; reveal(); };
+  const done = () => { canInstall = false; hide(3650); if (!locked()) render(false, true); };
   $("#inst-x").onclick = () => hide(7);
   addEventListener("beforeinstallprompt", e => { e.preventDefault(); prompt = e; });
-  addEventListener("appinstalled", () => { hide(3650); toast("Palpiteiro instalado"); });
-  $("#inst-ok").onclick = async () => {
-    if (prompt) { prompt.prompt(); const r = await prompt.userChoice.catch(() => null); prompt = null; if (!r || r.outcome !== "accepted") hide(7); return; }
+  addEventListener("appinstalled", () => { done(); toast("Palpiteiro instalado"); });
+  const install = async () => {
+    if (isStandalone) return;
+    if (prompt) { const p = prompt; prompt = null; p.prompt(); const r = await p.userChoice.catch(() => null); if (!r || r.outcome !== "accepted") hide(7); else box.classList.remove("show"); return; }
     if (inApp) help(`<b>Abra no navegador</b>Toque nos ${B("três pontinhos")} e escolha ${B(ios ? "Abrir no Safari" : "Abrir no Chrome")}. Lá dá pra instalar.`);
-    else if (ios) help(`<b>Como instalar no iPhone</b>Toque em ${B("Compartilhar")} (quadrado com seta ↑) e depois em ${B("Adicionar à Tela de Início")}.`);
-    else help(`<b>Como instalar</b>Abra o menu ${B("⋮")} do navegador e toque em ${B("Instalar app")} ou ${B("Adicionar à tela inicial")}.`);
+    else if (ios) help(`<b>Como instalar no iPhone</b>No Safari, toque em ${B("Compartilhar")} (quadrado com seta ↑) e depois em ${B("Adicionar à Tela de Início")}.`);
+    else if (mobile) help(`<b>Como instalar</b>Abra o menu ${B("⋮")} do navegador e toque em ${B("Instalar app")} ou ${B("Adicionar à tela inicial")}.`);
+    else help(`<b>Como instalar no computador</b>Clique no ícone de ${B("instalar")} no fim da barra de endereço, ou no menu ${B("⋮")} e em ${B("Instalar Palpiteiro")}.`);
   };
-  if (mobile || "onbeforeinstallprompt" in window) show();
+  $("#inst-ok").onclick = install;
+  window.palInstall = install;
+  window.palCanInstall = () => canInstall;
+  if (isStandalone || snoozed || !canInstall) return;
+  // o convite aparece sozinho só depois que a pessoa entrou no app
+  const wait = setInterval(() => { if (!locked()) { clearInterval(wait); setTimeout(reveal, 2500); } }, 1000);
 })();
+function gateFail() {
+  const g = document.getElementById("gate"); if (!g) return;
+  g.hidden = false;
+  g.innerHTML = `<div class="g-card"><div class="g-logo"><img src="icon-192.png?v=3" alt=""><h1>Palpi<span>teiro</span></h1></div>
+    <p class="g-sub">Não deu para carregar o login. Confira a internet e tente de novo.</p>
+    <button class="g-main" onclick="location.reload()">Tentar de novo</button></div>`;
+}
+window.gateFail = gateFail;
 </script>
-<script type="module" src="gate.js?v=3"></script>
+<script type="module" src="gate.js?v=4" onerror="gateFail()"></script>
 </body>
 </html>
