@@ -184,7 +184,7 @@
   .nav button.on{background:#2b333d;color:var(--green)}
   .nav svg{width:22px;height:22px}
   .badge{position:absolute;top:3px;right:calc(50% - 22px);background:var(--red);color:#fff;font-size:10px;font-weight:800;border-radius:99px;padding:1px 6px}
-  .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--green);color:#04210f;font-weight:700;padding:10px 18px;border-radius:99px;transition:.25s;z-index:20;font-size:14px;white-space:nowrap}
+  .toast{position:fixed;pointer-events:none;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--green);color:#04210f;font-weight:700;padding:10px 18px;border-radius:99px;transition:.25s;z-index:20;font-size:14px;white-space:nowrap}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .fade{animation:f .25s ease}
   @keyframes f{from{opacity:0;transform:translateY(8px)}}
@@ -676,21 +676,25 @@ if ("serviceWorker" in navigator) addEventListener("load", () => navigator.servi
   if (standalone || snoozed) return;
   const ua = navigator.userAgent;
   const ios = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const iosSafari = ios && !/crios|fxios|edgios|instagram|fban|fbav|tiktok/i.test(ua);
+  const inApp = /instagram|fban|fbav|tiktok|musical_ly|bytedance|whatsapp|line\//i.test(ua);
+  const mobile = ios || /android/i.test(ua);
   let prompt = null;
-  const show = () => setTimeout(() => box.classList.add("show"), 2500);
+  const place = () => { const n = document.querySelector(".nav"); if (n) box.style.bottom = (innerHeight - n.getBoundingClientRect().top + 10) + "px"; };
+  addEventListener("resize", place);
+  const show = () => setTimeout(() => { place(); box.classList.add("show"); }, 2500);
   const hide = days => { box.classList.remove("show"); try { localStorage.setItem(KEY, Date.now() + days * 86400000); } catch (e) {} };
+  const B = t => `<b style="display:inline;font-size:13px">${t}</b>`;
+  const help = html => { $("#inst-t").innerHTML = html; $("#inst-ok").hidden = true; place(); };
   $("#inst-x").onclick = () => hide(7);
-  addEventListener("beforeinstallprompt", e => { e.preventDefault(); prompt = e; show(); });
+  addEventListener("beforeinstallprompt", e => { e.preventDefault(); prompt = e; });
   addEventListener("appinstalled", () => { hide(3650); toast("Palpiteiro instalado"); });
   $("#inst-ok").onclick = async () => {
     if (prompt) { prompt.prompt(); const r = await prompt.userChoice.catch(() => null); prompt = null; if (!r || r.outcome !== "accepted") hide(7); return; }
-    if (iosSafari) {
-      $("#inst-t").innerHTML = `<b>Como instalar no iPhone</b>Toque em <b style="display:inline;font-size:13px">Compartilhar</b> (quadrado com seta ↑) e depois em <b style="display:inline;font-size:13px">Adicionar à Tela de Início</b>.`;
-      $("#inst-ok").hidden = true;
-    }
+    if (inApp) help(`<b>Abra no navegador</b>Toque nos ${B("três pontinhos")} e escolha ${B(ios ? "Abrir no Safari" : "Abrir no Chrome")}. Lá dá pra instalar.`);
+    else if (ios) help(`<b>Como instalar no iPhone</b>Toque em ${B("Compartilhar")} (quadrado com seta ↑) e depois em ${B("Adicionar à Tela de Início")}.`);
+    else help(`<b>Como instalar</b>Abra o menu ${B("⋮")} do navegador e toque em ${B("Instalar app")} ou ${B("Adicionar à tela inicial")}.`);
   };
-  if (iosSafari) show();
+  if (mobile || "onbeforeinstallprompt" in window) show();
 })();
 </script>
 <script type="module" src="gate.js?v=3"></script>
