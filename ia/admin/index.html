@@ -57,6 +57,9 @@
   .tk{background:var(--card);border-radius:16px;padding:14px}
   .tk-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
   .tk-h b{font-size:16px}.tk-h span{color:var(--yel);font-weight:800}
+  .rsk{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:99px;font-size:12.5px;font-weight:800;white-space:nowrap}
+  .rsk i{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+  .sug{color:var(--mut);font-size:12px;line-height:1.4}
   .tk-s{padding:7px 0;border-top:1px solid var(--line);font-size:14px}
   .tk-s small{display:block;color:var(--mut);font-size:12px}
   .tk-c{color:var(--mut);font-size:12px;margin-top:8px;word-break:break-all}
@@ -135,7 +138,23 @@ const first = n => String(n || "").trim().split(/\s+/)[0] || "";
 const welcome = u => `https://wa.me/${waNum(u.whatsapp)}?text=` + encodeURIComponent(
   `Olá${first(u.name) ? ", " + first(u.name) : ""}! Seu acesso ao Palpiteiro foi liberado ✅\n\nEntre aqui: ${APP_URL}\n\nDica: toque em "Instalar app" para deixar o Palpiteiro na tela inicial do celular.`);
 const STATUS = {pending: "Pendente", approved: "Aprovado", blocked: "Bloqueado"};
-const TIPOS = ["Seguro", "Equilibrado", "Ousado"];
+// Niveis de risco, do mais seguro (verde) ao mais arriscado (vermelho).
+const RISCOS = [
+  {lbl: "Muito seguro",    c: "#19e07a", odd: 1.8},
+  {lbl: "Seguro",          c: "#a8e05f", odd: 2.8},
+  {lbl: "Médio",           c: "#ffd34d", odd: 4.5},
+  {lbl: "Arriscado",       c: "#ff9a3d", odd: 8},
+  {lbl: "Muito arriscado", c: "#ff5a5a", odd: Infinity}
+];
+const TIPOS = RISCOS.map(r => r.lbl);
+const ANTIGOS = {"equilibrado": "Médio", "ousado": "Arriscado", "moderado": "Médio"};
+const riscoOdd = odd => { const o = parseFloat(String(odd).replace(",", ".")); if (!(o > 1)) return null; return RISCOS.find(r => o < r.odd); };
+function riscoNome(nome, odd) {
+  const n = String(nome || "").trim().toLowerCase();
+  const alvo = String(ANTIGOS[n] || nome || "").trim().toLowerCase();
+  return RISCOS.find(r => r.lbl.toLowerCase() === alvo) || riscoOdd(odd);
+}
+const rskTag = r => `<span class="rsk" style="color:${r.c};background:${r.c}1f"><i></i>${r.lbl}</span>`;
 
 let users = [], tickets = [], tab = "pend", q = "", filt = "all", tkDay = dayStr(), unsub = null, unsubT = null, ticketsErr = false;
 const modal = document.getElementById("modal"), sheet = document.getElementById("sheet");
@@ -309,7 +328,7 @@ function ticketsView() {
       <button class="btn g" id="tk-new" style="margin-left:auto">+ Novo bilhete</button></div>
     <p class="hint" style="margin-bottom:10px">Os bilhetes de <b>${esc(brDay(tkDay))}</b> aparecem no app na aba Palpites só nesse dia. O botão Apostar abre a Bingo em Casa com o código de reserva.</p>
     <div class="list">${list.length ? list.map(t => `<div class="tk">
-      <div class="tk-h"><b>${esc(t.tipo || "Bilhete")}</b><span>${t.odd ? "Odd " + esc(t.odd) : ""}</span></div>
+      <div class="tk-h">${(() => { const r = riscoNome(t.tipo, t.odd); return r ? rskTag(r) : `<b>${esc(t.tipo || "Bilhete")}</b>`; })()}<span>${t.odd ? "Odd " + esc(t.odd) : ""}</span></div>
       ${(t.sel || []).map(x => `<div class="tk-s"><small>${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</small>${esc(x.mercado)}</div>`).join("")}
       <div class="tk-c">Código de reserva: <b>${esc(t.codigo || "sem código (abre o link de cadastro)")}</b></div>
       <div class="acts" style="margin-top:10px;justify-content:flex-start"><button class="btn s" data-tke="${esc(t.id)}">Editar</button><button class="btn s" data-tkc="${esc(t.id)}">Copiar para outro dia</button><button class="btn r" data-tkx="${esc(t.id)}">Excluir</button></div>
@@ -335,16 +354,18 @@ function ticketForm(t) {
   const selRow = x => `<div class="selrow"><input placeholder="Jogo (ex.: Sport x Goiás)" value="${esc(x.jogo || "")}" maxlength="80">
     <input placeholder="Hora" value="${esc(x.hora || "")}" maxlength="5" inputmode="numeric">
     <input placeholder="Palpite (ex.: Mais de 2.5 gols)" value="${esc(x.mercado || "")}" maxlength="80"><button type="button" aria-label="Tirar">✕</button></div>`;
-  const custom = t.tipo && !TIPOS.includes(t.tipo);
+  const nome = (riscoNome(t.tipo, null) || {}).lbl || t.tipo;
+  const custom = nome && !TIPOS.includes(nome);
   modal.hidden = false;
   sheet.innerHTML = `<h3>${isNew ? "Novo bilhete" : "Editar bilhete"}</h3>
     <div class="form">
       <div class="g2"><label>Dia<input type="date" id="t-date" value="${esc(t.date || tkDay)}"></label>
-        <label>Tipo<select id="t-tipo">${TIPOS.map(x => `<option ${t.tipo === x ? "selected" : ""}>${x}</option>`).join("")}<option value="_" ${custom ? "selected" : ""}>Outro nome…</option></select></label></div>
+        <label>Nível de risco<select id="t-tipo">${TIPOS.map(x => `<option ${nome === x ? "selected" : ""}>${x}</option>`).join("")}<option value="_" ${custom ? "selected" : ""}>Outro nome…</option></select></label></div>
       <label id="t-outro-l" ${custom ? "" : "hidden"}>Nome do bilhete<input id="t-outro" value="${esc(custom ? t.tipo : "")}" maxlength="24"></label>
+      <div class="sug" id="t-sug" hidden></div>
       <div class="g2"><label>Odd total<input id="t-odd" inputmode="decimal" placeholder="3.22" value="${esc(t.odd || "")}" maxlength="8"></label>
         <label>Código de reserva<input id="t-cod" placeholder="17059B1" value="${esc(t.codigo || "")}" maxlength="24" autocapitalize="characters"></label></div>
-      <p class="hint">O código de reserva é o que a Bingo em Casa mostra quando você monta o bilhete lá e toca em reservar/compartilhar.</p>
+      <p class="hint">O código de reserva é o que a Bingo em Casa mostra quando você monta o bilhete lá e toca em reservar/compartilhar.<br>O nível de risco pinta o bilhete no app, do verde (muito seguro) ao vermelho (muito arriscado).</p>
       <div style="font-weight:700;font-size:14px">Jogos do bilhete</div>
       <div id="t-sel" style="display:flex;flex-direction:column;gap:8px">${(t.sel && t.sel.length ? t.sel : [{}, {}]).map(selRow).join("")}</div>
       <button type="button" class="btn s" id="t-add">+ Adicionar jogo</button>
@@ -357,7 +378,22 @@ function ticketForm(t) {
   wireRows();
   document.getElementById("t-add").onclick = () => { box.insertAdjacentHTML("beforeend", selRow({})); wireRows(); box.lastElementChild.querySelector("input").focus(); };
   const tipoSel = document.getElementById("t-tipo");
-  tipoSel.onchange = () => { document.getElementById("t-outro-l").hidden = tipoSel.value !== "_"; };
+  const oddIn = document.getElementById("t-odd"), sug = document.getElementById("t-sug");
+  let tocouTipo = !isNew;
+  const verSug = () => {
+    const r = riscoOdd(oddIn.value);
+    if (!r) { sug.hidden = true; return; }
+    if (!tocouTipo) { tipoSel.value = r.lbl; document.getElementById("t-outro-l").hidden = true; }
+    sug.hidden = false;
+    sug.innerHTML = tipoSel.value === r.lbl
+      ? `Pela odd ${esc(oddIn.value)}, esse bilhete é <b style="color:${r.c}">${esc(r.lbl)}</b>.`
+      : `Pela odd ${esc(oddIn.value)}, costuma ser <b style="color:${r.c}">${esc(r.lbl)}</b>. <button type="button" id="t-usar" style="color:var(--green);font-weight:700;text-decoration:underline">Usar esse</button>`;
+    const u = document.getElementById("t-usar");
+    if (u) u.onclick = () => { tipoSel.value = r.lbl; document.getElementById("t-outro-l").hidden = true; verSug(); };
+  };
+  oddIn.oninput = verSug;
+  tipoSel.onchange = () => { tocouTipo = true; document.getElementById("t-outro-l").hidden = tipoSel.value !== "_"; verSug(); };
+  verSug();
   document.getElementById("t-cancel").onclick = closeModal;
   const save = document.getElementById("t-save");
   save.onclick = async () => {
