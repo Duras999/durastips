@@ -216,7 +216,17 @@
   .pulse{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(25,224,122,.6);animation:p 1.6s infinite}
   @keyframes p{70%{box-shadow:0 0 0 10px rgba(25,224,122,0)}100%{box-shadow:0 0 0 0 rgba(25,224,122,0)}}
   .pick{background:var(--card2);border-radius:16px;padding:14px;margin-top:10px;border:1px solid var(--line)}
+  .pick-h{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
   .pick .mk{font-weight:800;font-size:17px}
+  .rsk{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
+  .rsk i{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+  .rsk-big{font-size:13.5px;padding:7px 14px}
+  .risco-leg{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:14px;flex-wrap:wrap}
+  .risco-leg b{width:9px;height:9px;border-radius:50%;display:block}
+  .risco-leg span{font-size:10.5px;color:var(--mut);margin-right:6px}
+  .slip-rsk{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;background:var(--card2);border-radius:14px;padding:11px 13px}
+  .slip-rsk .ch{font-size:13px;color:var(--mut);text-align:right;line-height:1.3}
+  .slip-rsk .ch b{display:block;font-size:19px;font-weight:800}
   .pick .why{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.45}
   .conf{display:flex;align-items:center;gap:10px;margin-top:10px}
   .bar{flex:1;height:8px;background:#2a323c;border-radius:99px;overflow:hidden}
@@ -309,7 +319,7 @@ function readyView() {
   const list = (window.palTickets || []).filter(b => b && b.date === today && Array.isArray(b.sel) && b.sel.length);
   if (!list.length) return "";
   return `<div class="ready-wrap"><div class="ready-title">Bilhetes prontos do Palpiteiro</div>` +
-    list.map(b => `<div class="ready fade"><div class="ready-head"><span class="ready-tag">${esc(b.tipo || "Bilhete")}</span>${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
+    list.map(b => `<div class="ready fade"><div class="ready-head">${(() => { const r = riscoNome(b.tipo, b.odd); return `<span class="ready-tag"${r ? ` style="background:${r.c};color:#0b0e12"` : ""}>${esc(r ? r.lbl : (b.tipo || "Bilhete"))}</span>`; })()}${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
       b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</div><div class="m">${esc(x.mercado)}</div></div>`).join("") +
       `<a class="gen ready-btn" href="${b.codigo ? CASA + encodeURIComponent(b.codigo) : AFILIADO}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets')">Apostar</a></div>`).join("") +
     `<p class="ready-note">O botão abre a Bingo em Casa com o bilhete já montado. As odds podem mudar até o jogo.<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
@@ -392,6 +402,29 @@ const whenLabel = x => {
     d.toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "2-digit"});
   return lbl + " " + hhmm(x.t);
 };
+/* ---------- nível de risco (do verde ao vermelho) ---------- */
+const RISCOS = [
+  {lbl: "Muito seguro",    min: 78, c: "#19e07a"},
+  {lbl: "Seguro",          min: 70, c: "#a8e05f"},
+  {lbl: "Médio",           min: 62, c: "#ffd34d"},
+  {lbl: "Arriscado",       min: 50, c: "#ff9a3d"},
+  {lbl: "Muito arriscado", min: 0,  c: "#ff5a5a"}
+];
+const ANTIGOS = {"equilibrado": "Médio", "ousado": "Arriscado", "moderado": "Médio"};
+const risco = pct => RISCOS.find(r => pct >= r.min) || RISCOS[RISCOS.length - 1];
+// bilhete pronto: pelo nome escolhido no painel; sem nome conhecido, pela odd
+const riscoOdd = odd => { const o = parseFloat(String(odd).replace(",", ".")); if (!(o > 1)) return null;
+  return o < 1.8 ? RISCOS[0] : o < 2.8 ? RISCOS[1] : o < 4.5 ? RISCOS[2] : o < 8 ? RISCOS[3] : RISCOS[4]; };
+function riscoNome(nome, odd) {
+  const n = String(nome || "").trim().toLowerCase();
+  const alvo = ANTIGOS[n] || nome;
+  return RISCOS.find(r => r.lbl.toLowerCase() === String(alvo).trim().toLowerCase()) || riscoOdd(odd);
+}
+const rskTag = (r, cls) => `<span class="rsk ${cls || ""}" style="color:${r.c};background:${r.c}1f"><i></i>${r.lbl}</span>`;
+const LEGENDA = `<div class="risco-leg"><span>Do mais seguro ao mais arriscado:</span>${RISCOS.map(r => `<b style="background:${r.c}" title="${r.lbl}"></b>`).join("")}</div>`;
+// chance de o bilhete inteiro bater: as confianças se multiplicam
+const chanceBilhete = list => Math.round(list.reduce((a, s) => a * (s.conf / 100), 1) * 100);
+
 /* ---------- times favoritos ---------- */
 const FAVKEY = "pal-favs";
 let favs = null; try { favs = JSON.parse(localStorage.getItem(FAVKEY) || "null"); } catch (e) {}
@@ -801,11 +834,12 @@ async function detailView(id) {
     if (!A.picks.length) body += `<div class="empty">Esse jogo não tem tendência forte o bastante. O Palpiteiro prefere não indicar nada.</div>`;
     for (const p of A.picks) {
       const inSlip = slip.some(s => s.id === id && s.mk === p.mk);
-      body += `<div class="pick fade"><div class="mk">${esc(p.mk)}</div><div class="why">${esc(p.why)}</div>
-        <div class="conf"><div class="bar"><i style="width:${p.conf}%"></i></div><span class="pct">${p.conf}%</span></div>
+      const r = risco(p.conf);
+      body += `<div class="pick fade"><div class="pick-h"><div class="mk">${esc(p.mk)}</div>${rskTag(r)}</div><div class="why">${esc(p.why)}</div>
+        <div class="conf"><div class="bar"><i style="width:${p.conf}%;background:${r.c}"></i></div><span class="pct" style="color:${r.c}">${p.conf}%</span></div>
         <button class="add ${inSlip ? "in" : ""}" data-id="${esc(id)}" data-mk="${esc(p.mk)}" data-conf="${p.conf}" onclick="toggle(this.dataset.id,this.dataset.mk,+this.dataset.conf)">${inSlip ? "No bilhete" : "+ Adicionar ao bilhete"}</button></div>`;
     }
-    body += `<p style="color:var(--mut);font-size:12px;margin-top:12px;text-align:center">A confiança vem só dos últimos resultados. Não considera desfalques. Não é garantia de resultado.</p></div>`;
+    body += LEGENDA + `<p style="color:var(--mut);font-size:12px;margin-top:10px;text-align:center">A confiança vem só dos últimos resultados. Não considera desfalques. Não é garantia de resultado.</p></div>`;
   } else if (tab === "tab") {
     const T = A.table, mine = r => r.team_slug === A.H.slug || r.team_slug === A.A.slug || r.team === m.home || r.team === m.away;
     body = `<div class="box fade tbl-box"><h3>${esc(m.lname || "Tabela")}</h3>`;
@@ -903,13 +937,15 @@ function slipView() {
   else {
     html += slip.map((s, i) => `<div class="slip-item">${crest(s.h, s.hl)}<div style="flex:1">
       <div class="g">${esc(short(s.h))} x ${esc(short(s.a))} · ${esc(whenLabel(s))}</div><div class="m">${esc(s.mk)}</div>
-      <div class="g" style="color:var(--green);margin-top:3px">Confiança do Palpiteiro: ${s.conf}%</div></div>
+      <div class="g" style="margin-top:4px"><span class="rsk" style="color:${risco(s.conf).c};background:${risco(s.conf).c}1f"><i></i>${risco(s.conf).lbl} · ${s.conf}%</span></div></div>
       <button class="rm" onclick="slip.splice(${i},1);saveSlip();render()">✕</button></div>`).join("");
     const avg = Math.round(slip.reduce((a, s) => a + s.conf, 0) / slip.length);
-    html += `<div class="total"><span>${slip.length} seleç${slip.length > 1 ? "ões" : "ão"}</span><span>Confiança média <b style="color:var(--green)">${avg}%</b></span></div>
+    const ch = chanceBilhete(slip), rb = risco(ch);
+    html += `<div class="total"><span>${slip.length} seleç${slip.length > 1 ? "ões" : "ão"}</span><span>Confiança média <b style="color:${risco(avg).c}">${avg}%</b></span></div>
+      <div class="slip-rsk">${rskTag(rb, "rsk-big")}<div class="ch">Chance de bater tudo<b style="color:${rb.c}">${ch}%</b></div></div>
       <a class="gen" style="margin-top:14px;display:block;text-align:center;text-decoration:none" href="https://a.bingoem.casa/t/NTk2OTEwXzM=" target="_blank" rel="noopener" onclick="copySlip(true);window.track&&window.track('bets')">Apostar</a>`;
   }
-  return html + `</div><p class="note">Quanto mais seleções, menor a chance de o bilhete inteiro bater.<br>+18 · Aposte com responsabilidade.</p>` + acct();
+  return html + (slip.length ? LEGENDA : "") + `</div><p class="note">Quanto mais seleções, menor a chance de o bilhete inteiro bater.<br>+18 · Aposte com responsabilidade.</p>` + acct();
 }
 function toggle(id, mk, conf) {
   const i = slip.findIndex(s => s.id === id && s.mk === mk);
