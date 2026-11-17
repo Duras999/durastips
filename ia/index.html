@@ -120,6 +120,19 @@
   .fav-skip{flex:none;padding:0 20px;border-radius:16px;background:var(--card);font-weight:700;color:var(--mut)}
   .fav-foot .gen{margin-top:0;flex:1}
   body.noscroll{overflow:hidden}
+  body.noscroll .inst{display:none}
+  .tbar{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .tbar h1{flex:1;font-size:20px;font-weight:800;letter-spacing:-.3px}.tbar h1 span{color:var(--green)}
+  .tback{font-size:22px;padding:4px 8px 4px 0}
+  .tplus{flex:none;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green2));color:#04210f;font-size:26px;font-weight:700;line-height:1;display:grid;place-items:center;box-shadow:0 0 16px rgba(25,224,122,.3)}
+  .tplus:active{opacity:.75}
+  .lhead .crest{width:40px;height:40px;font-size:12px}
+  .nx .time{width:64px;font-size:13px;line-height:1.35}
+  .nx .time b{display:block;color:var(--txt);font-weight:600;font-size:14px}
+  .nx .vs{color:var(--mut);font-size:12px;margin-right:2px}
+  .nx .where{font-size:11px;font-weight:700;color:var(--mut);background:var(--card2);padding:5px 9px;border-radius:99px;white-space:nowrap}
+  .nonext{padding:12px 16px 14px;border-top:1px solid var(--line);color:var(--mut);font-size:13.5px}
+  .bigadd{display:inline-block;margin-top:16px;padding:13px 24px;border-radius:14px;background:linear-gradient(135deg,var(--green),var(--green2));color:#04210f;font-weight:800}
   .search input{flex:1;background:none;border:0;outline:0;color:var(--txt);font:inherit;font-size:16px}
   .chips{display:flex;gap:8px;margin-top:12px;overflow-x:auto;scrollbar-width:none}
   .chip{white-space:nowrap;padding:8px 14px;border-radius:99px;background:var(--card);font-weight:600;font-size:14px;color:var(--mut)}
@@ -668,7 +681,7 @@ async function homeView() {
   const top = `<div class="top">${head}
     <div class="sbar"><div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
       <input id="q" placeholder="Buscar time" value="${esc(filter)}" oninput="filter=this.value;render(true)"></div>
-      <button class="favbtn ${favs && favs.length ? "on" : ""}" onclick="openFavs(false)" aria-label="Meus times favoritos">${STAR}Meus times</button></div>
+      <button class="favbtn ${favs && favs.length ? "on" : ""}" onclick="go('times')" aria-label="Meus times favoritos">${STAR}Meus times</button></div>
     <div class="ctrl"><button class="live ${liveOnly ? "on" : ""}" onclick="toggleLive()">Ao vivo <i></i></button>
     <div class="day"><button onclick="liveOnly=false;dayOff--;render()">‹</button><span>${dayLabel()}</span><button onclick="liveOnly=false;dayOff++;render()">›</button></div></div></div>`;
   const off = dayOff, key = dayOf(off);
@@ -688,7 +701,7 @@ async function homeView() {
       html += `<div class="league fade"><div class="lhead"><div class="lbadge favl">${STAR}</div>
         <div><div class="lname">Meus times</div><div class="lsub">${mine.length} jogo${mine.length > 1 ? "s" : ""}</div></div></div>` + mine.map(matchRow).join("") + `</div>`;
     } else if (!liveOnly) {
-      html += `<p class="favnone">Seus times não jogam ${dayOff === 0 ? "hoje" : "nesse dia"}. <button onclick="openFavs(false)">Mudar meus times</button></p>`;
+      html += `<p class="favnone">Seus times não jogam ${dayOff === 0 ? "hoje" : "nesse dia"}. <button onclick="go('times')">Ver próximos jogos</button></p>`;
     }
   }
   for (const {L, ms} of dayCache[key].d) {
@@ -820,6 +833,70 @@ async function detailView(id) {
   return head + body + credit;
 }
 
+/* ---------- tela Meus times: próximos jogos ---------- */
+const teamIs = (f, name) => !!name && (slugify(name) === f.slug || tkey(name) === tkey(f.name));
+let nextCache = null;
+async function nextGames() {
+  const key = favs.map(f => f.slug).join(",");
+  if (nextCache && nextCache.key === key && Date.now() - nextCache.t < 10 * 60000) return nextCache.d;
+  const from = Date.now() - 2 * 3600000;
+  const up = m => m && m.time && m.status !== "finished" && new Date(m.time).getTime() > from;
+  const res = await Promise.all(favs.map(async f => {
+    const t = await getJSON(`${API}/team/?slug=${encodeURIComponent(f.slug)}`, 60).catch(() => null);
+    return {f, ok: !!t, list: ((t && t.matches) || []).filter(up)};
+  }));
+  // se a fonte não mandou a agenda do time, procura nos jogos dos próximos 7 dias
+  if (res.some(r => !r.list.length)) {
+    const days = await Promise.all([0, 1, 2, 3, 4, 5, 6].map(async off => {
+      const k = dayOf(off);
+      if (!dayCache[k]) { try { dayCache[k] = {t: Date.now(), d: await loadDay(off)}; } catch (e) { return []; } }
+      return dayCache[k].d.flatMap(g => g.ms);
+    }));
+    const week = days.flat().filter(up);
+    for (const r of res) if (!r.list.length) { r.list = week.filter(m => teamIs(r.f, m.home) || teamIs(r.f, m.away)); if (week.length) r.ok = true; }
+  }
+  const logoOf = n => { const f = favs.find(x => teamIs(x, n)); return f ? f.logo : ""; };
+  for (const r of res) {
+    const seen = new Set();
+    r.list = r.list.filter(m => { const id = mid(m); if (!id || seen.has(id)) return false; seen.add(id); return true; })
+      .sort((a, b) => a.time.localeCompare(b.time)).slice(0, 3);
+    for (const m of r.list) {
+      const id = mid(m);
+      if (!games[id]) games[id] = {...m, home_logo: m.home_logo || logoOf(m.home), away_logo: m.away_logo || logoOf(m.away), lname: m.lname || m.competition || ""};
+    }
+  }
+  if (res.some(r => r.ok)) nextCache = {key, t: Date.now(), d: res};
+  return res;
+}
+async function timesView() {
+  const head = `<div class="top"><div class="tbar"><button class="tback" onclick="go('')" aria-label="Voltar">←</button><h1>Meus <span>times</span></h1>
+    <button class="tplus" onclick="openFavs(false)" aria-label="Adicionar ou remover times">+</button></div></div>`;
+  if (!favs || !favs.length)
+    return head + `<div class="box fade"><div class="empty">Você ainda não escolheu nenhum time.<br>Toque no <b style="color:var(--green)">+</b> para adicionar e ver os próximos jogos deles aqui.<br><button class="bigadd" onclick="openFavs(false)">+ Adicionar times</button></div></div>` + credit;
+  const key = favs.map(f => f.slug).join(",");
+  if (!(nextCache && nextCache.key === key))
+    $("#app").innerHTML = head + `<div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Buscando os próximos jogos…</div>`;
+  let res;
+  try { res = await nextGames(); }
+  catch (e) { return head + `<div class="empty">Não consegui buscar os próximos jogos agora.<br><button class="retry" onclick="render()">Tentar de novo</button></div>`; }
+  if (location.hash.slice(1) !== "times") return null;
+  let html = head;
+  for (const {f, ok, list} of res) {
+    html += `<div class="league fade"><div class="lhead">${crest(f.name, f.logo)}<div><div class="lname">${esc(short(f.name))}</div>
+      <div class="lsub">${list.length ? "Próximos jogos" : "Sem jogo marcado"}</div></div></div>`;
+    if (!list.length) html += `<div class="nonext">${ok ? "Nenhum jogo marcado nos próximos dias." : "Não deu para buscar os jogos desse time agora."}</div>`;
+    for (const m of list) {
+      const g = games[mid(m)] || m, home = teamIs(f, m.home), opp = home ? m.away : m.home, lbl = whenLabel({t: m.time}).split(" ");
+      const live = m.status === "live";
+      html += `<button class="match nx" onclick="go('jogo-${esc(mid(m))}')"><div class="time">${live ? `<b style="color:var(--red)">AO VIVO</b>` : `${esc(lbl[0])}<b>${esc(lbl[1] || "")}</b>`}</div>
+        <div class="teams"><div class="team"><span class="vs">x</span>${crest(opp, home ? g.away_logo : g.home_logo)}${esc(short(opp))}</div></div>
+        <span class="where">${home ? "Em casa" : "Fora"}</span></button>`;
+    }
+    html += `</div>`;
+  }
+  return html + `<div style="padding:4px 16px 0"><button class="add" onclick="openFavs(false)">+ Adicionar ou remover times</button></div>` + credit;
+}
+
 function slipView() {
   let html = `<div class="top"><div class="brand"><button class="home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"></button><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
   if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites do Palpiteiro</b> e adicione as seleções.</div>`;
@@ -856,6 +933,7 @@ async function render(keepFocus, quiet) {
   try {
     if (h.startsWith("jogo-")) html = await detailView(decodeURIComponent(h.slice(5)));
     else if (h === "bilhete") html = slipView();
+    else if (h === "times") html = await timesView();
     else html = await homeView();
   } catch (e) {
     console.error("Palpiteiro render", e);
@@ -867,6 +945,7 @@ async function render(keepFocus, quiet) {
 }
 window.addEventListener("hashchange", () => { tab = "seq"; render(); window.scrollTo(0, 0); });
 window.palRender = () => { if (!location.hash.slice(1) && homeTab === "palpites") render(false, true); };
+document.addEventListener("visibilitychange", () => { if (!document.hidden && location.hash.slice(1) === "times" && !document.body.classList.contains("locked")) render(false, true); });
 /* ---------- sem zoom no celular ---------- */
 ["gesturestart", "gesturechange", "gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive: false}));
 document.addEventListener("touchmove", e => { if (e.touches.length > 1) e.preventDefault(); }, {passive: false});
